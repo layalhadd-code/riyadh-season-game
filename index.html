@@ -595,6 +595,26 @@ button{font-family:inherit}
       <div class="actionbar"><button class="btn ghost" onclick="go('outing')">Back to the plan</button></div>
     </section>
 
+    <!-- 10c TOGETHER (going with a matched member) -->
+    <section class="screen" data-s="together">
+      <div class="body">
+        <div class="backlink" onclick="go('gomatch')">‹ Back</div>
+        <div class="badge g">✓ Matched</div>
+        <div style="display:flex;align-items:center;justify-content:center;gap:12px;margin:16px 0 8px">
+          <span id="tgYou" style="width:58px;height:58px;border-radius:50%;background:#ff6ba8;display:grid;place-items:center;font-size:19px;font-weight:800;color:#fff">OM</span>
+          <span style="font-size:24px">🤝</span>
+          <span id="tgThem" style="width:58px;height:58px;border-radius:50%;background:#5aa9ff;display:grid;place-items:center;font-size:19px;font-weight:800;color:#fff">R</span>
+        </div>
+        <div class="h1" id="tgTitle" style="text-align:center">You're going with R.</div>
+        <div class="lead" id="tgLead" style="text-align:center">Tarab night · you'll meet at the venue.</div>
+        <div class="handoff" style="margin-top:12px"><span class="wbk">What happens next</span>
+          <b style="color:#fff">1.</b> You each buy your own seat on webook.<br><b style="color:#fff">2.</b> Verified accounts · public venue · women-only tables honoured.<br><b style="color:#fff">3.</b> A private chat unlocks once you've both booked — so you connect before the night.
+        </div>
+        <div class="safety"><div class="s">Verified</div><div class="s">Public venue</div><div class="s">Chat after booking</div></div>
+      </div>
+      <div class="actionbar"><button class="btn primary" id="tgBtn" onclick="doTogether()">Buy my seat on webook</button></div>
+    </section>
+
     <!-- 11 RESALE -->
     <section class="screen" data-s="resale">
       <div class="body">
@@ -653,7 +673,6 @@ var EVENTS=[
  {id:"six-kings",t:"Six Kings Slam",cat:"Sports",when:"27, 28 & 30 Dec",venue:"The Venue",price:"From SAR 200",emo:"🎾",g:"linear-gradient(135deg,#2a1248,#0c0716)",demand:"sold",fr:"3 friends said yes"},
  {id:"crown-jewel",t:"WWE Crown Jewel",cat:"Sports",when:"20 Nov",venue:"Kingdom Arena",price:"From SAR 180",emo:"🤼",g:"linear-gradient(135deg,#4a0f1e,#140608)",demand:"sold",fr:"5 friends said yes"},
  {id:"ufc",t:"UFC Riyadh",cat:"Sports",when:"Dec",venue:"Kingdom Arena",price:"From SAR 250",emo:"🥋",g:"linear-gradient(135deg,#3a1012,#140607)",demand:"hot",fr:"4 friends said yes"},
- {id:"canelo",t:"Mexico vs The World",cat:"Sports",when:"31 Oct",venue:"ANB Arena",price:"From SAR 300",emo:"🥊",g:"linear-gradient(135deg,#2a1a08,#120a04)",demand:"sold",fr:"Canelo vs Mbilli"},
  {id:"afc",t:"AFC Asian Cup 2027",cat:"Sports",when:"7 Jan",venue:"King Fahd Sports City",price:"From SAR 120",emo:"⚽",g:"linear-gradient(135deg,#113a2e,#08140f)",demand:"hot",fr:"5 friends said yes"},
  {id:"blvd-world",t:"Boulevard World",cat:"Zones",when:"From 30 Oct",venue:"20+ country zones",price:"From SAR 30",emo:"🌍",g:"linear-gradient(135deg,#122a4a,#0a1424)",demand:"ok",fr:"6 friends said yes"},
  {id:"wonder",t:"Wonder Garden",cat:"Zones",when:"From Nov",venue:"Boulevard City",price:"From SAR 50",emo:"🌸",g:"linear-gradient(135deg,#3a1540,#130815)",demand:"ok",fr:"4 friends said yes"},
@@ -675,7 +694,7 @@ var EVENTS=[
  {id:"abu-bakr",t:"Abu Bakr Salem Stage",cat:"Concerts",when:"Headliner TBA",venue:"BLVD City",price:"Coming soon",emo:"🎤",g:"linear-gradient(135deg,#4a0f2e,#140610)",demand:"soon",fr:"Lineup drops soon"},
  {id:"nye",t:"New Year's Eve concert",cat:"Concerts",when:"31 Dec · TBA",venue:"To be announced",price:"Coming soon",emo:"🎆",g:"linear-gradient(135deg,#1c1240,#0a0716)",demand:"soon",fr:"Always sells fast"}
 ];
-var IMG={"six-kings":"six-kings.jpg","crown-jewel":"crown-jewel.jpg","ufc":"ufc.jpg","canelo":"canelo.jpg","blvd-world":"blvd-world.jpg","wonder":"wonder.jpg","toy-shop":"toy-shop.jpg","al-ommda":"al-ommda.jpg","groves":"groves.jpg","ethnosport":"ethnosport.jpg","via":"via.jpg","farmers":"farmers.jpg","formula-e":"formula-e.jpg","abu-bakr":"abu-bakr.jpg","pier":"pier.jpg","zodiac":"zodiac.jpg","gymkhana":"gymkhana.jpg","cutco":"cutco.jpg","cocomelon":"cocomelon.jpg","dolphin":"dolphin.jpg","zoo":"zoo.jpg","peekaboo":"peekaboo.jpg"};
+var IMG={"six-kings":"six-kings.jpg","crown-jewel":"crown-jewel.jpg","ufc":"ufc.jpg","blvd-world":"blvd-world.jpg","wonder":"wonder.jpg","toy-shop":"toy-shop.jpg","al-ommda":"al-ommda.jpg","groves":"groves.jpg","ethnosport":"ethnosport.jpg","via":"via.jpg","farmers":"farmers.jpg","formula-e":"formula-e.jpg","abu-bakr":"abu-bakr.jpg","pier":"pier.jpg","zodiac":"zodiac.jpg","gymkhana":"gymkhana.jpg","cutco":"cutco.jpg","cocomelon":"cocomelon.jpg","dolphin":"dolphin.jpg","zoo":"zoo.jpg","peekaboo":"peekaboo.jpg"};
 var CATS=["All","Sports","Concerts","Restaurants","Kids","Zones","Shows","Experiences","Culture"];
 
 /* ===== identity ===== */
@@ -865,7 +884,8 @@ function setOutingCircle(o,id){var c=circleById(id);if(!c)return;o.chosenId=id;o
 function pickCircle(id){setOutingCircle(curOuting,id);renderOuting();}
 function inviteCircle(){curOuting.members.forEach(function(x){if(x.status==='pending')x.status='invited';});renderOuting();toast('Invited '+curOuting.group+' — webook notification + WhatsApp sent ✓');}
 function rsvp(nm){var mem=curOuting.members.filter(function(x){return x.nm===nm;})[0];if(mem){mem.status='in';renderOuting();toast(nm+' is in ✓');}}
-function goingMembers(){return (curOuting.members||[]).filter(function(x){return x.status==='in'||x.status==='you';});}
+/* everyone you've invited (you + invited + accepted) — the group you book/send links for. 'pending' = not invited yet, excluded. */
+function goingMembers(){return (curOuting.members||[]).filter(function(x){return x.status!=='pending';});}
 
 /* ===== timeline ===== */
 function thumbHtml(o,cls){return o.img?'<div class="'+cls+' photo" style="background-image:url(\''+o.img+'\')"></div>':'<div class="'+cls+'" style="background:linear-gradient(135deg,#2a1248,#0c0716)">'+o.emo+'</div>';}
@@ -960,14 +980,14 @@ function renderOuting(){
       body.innerHTML=h+'<div class="src" style="color:var(--mut)">Pick a circle to invite to this outing — or create a new one.</div>';
       bar.innerHTML='<button class="btn primary" disabled>Book for the group →</button>';return;
     }
-    var mem=o.members,inCount=mem.filter(function(x){return x.status==="in"||x.status==="you";}).length,pct=Math.round(inCount/mem.length*100);
+    var mem=o.members,going=mem.filter(function(x){return x.status!=="pending";}).length,pct=Math.round(going/mem.length*100);
     var link='webook.com/w/'+o.id+'-'+(1000+o.t.length);
     h+='<div class="invite"><div style="font-weight:800;font-size:15px">Invite '+picked.nm+' to join</div>'+
       '<div class="msg">'+USER_NAME+': Let’s do <b>'+o.t+'</b> on '+o.d+'! Tap to join & grab your seat 👇<span class="lnk">'+link+'</span></div>'+
       '<button class="btn wa" onclick="inviteCircle()">🟢 Invite on WhatsApp</button>'+
       '<div class="row2" style="margin-top:8px"><button class="btn ghost" onclick="inviteCircle()">Copy link</button><button class="btn ghost" onclick="inviteCircle()">Share</button></div></div>'+
-      '<div class="proglab"><b>'+inCount+' of '+mem.length+' in</b><span style="color:var(--mut)">'+picked.nm+'</span></div><div class="prog"><span style="width:'+pct+'%"></span></div>'+
-      '<div class="src" style="color:var(--mut);margin:-2px 0 4px">'+(mem.some(function(x){return x.status==="invited";})?'Awaiting replies — tap ✓ In as each person accepts.':(inCount>1?'Your crew is in. Ready to book.':'Invite your circle so they can RSVP.'))+'</div>'+
+      '<div class="proglab"><b>'+going+' of '+mem.length+' in the plan</b><span style="color:var(--mut)">'+picked.nm+'</span></div><div class="prog"><span style="width:'+pct+'%"></span></div>'+
+      '<div class="src" style="color:var(--mut);margin:-2px 0 4px">'+(going>1?'Invited — each confirms by RSVP or by paying their own seat.':'Invite '+picked.nm+' so they can join and pay their seat.')+'</div>'+
       mem.map(function(x){return memRow(x,'commit');}).join('');
     h+='<div class="handoff" style="margin-top:12px;background:rgba(59,130,246,.08);border-color:rgba(59,130,246,.3);color:#cfe0ff"><span class="wbk" style="color:#93c5fd">🤝 None of your circle free?</span>Match me with a verified webook member who’s also going to this event and shares your taste.<button class="btn ghost" style="margin-top:9px" onclick="openGoMatch()">Match me with someone going →</button></div>';
     body.innerHTML=h;
@@ -1105,17 +1125,28 @@ function showGoMatch(){
     if(s.sharedEv.length)sigs+='<span class="sgtag db">🎫 Also booked '+s.sharedEv.slice(0,2).join(', ')+'</span>';
     if(s.sharedLayers.length)sigs+='<span class="sgtag">'+s.sharedLayers.slice(0,2).join(' · ')+'</span>';
     sigs+='<span class="sgtag">'+(c.budget===USER.budget?'same budget':'close budget')+'</span>';
-    return '<div class="cand"><div class="hd"><span class="av" style="background:'+c.c+'">'+c.in+'</span><div class="nm"><b>'+c.nm+' · verified</b><span class="mut">🎟️ Going to '+ev+'</span></div><div class="score"><div class="n">'+s.overall+'</div><div class="l">MATCH</div></div></div><div class="signals">'+sigs+'</div><button class="btn primary" style="margin-top:10px;padding:11px" onclick="toast(\'Introduced — going to '+ev+' with '+c.nm+' once you both confirm ✓\')">Go together →</button></div>';
+    return '<div class="cand"><div class="hd"><span class="av" style="background:'+c.c+'">'+c.in+'</span><div class="nm"><b>'+c.nm+' · verified</b><span class="mut">🎟️ Going to '+ev+'</span></div><div class="score"><div class="n">'+s.overall+'</div><div class="l">MATCH</div></div></div><div class="signals">'+sigs+'</div><button class="btn primary" style="margin-top:10px;padding:11px" onclick="openTogether(\''+c.nm+'\')">Go together →</button></div>';
   }).join('');
   document.getElementById('gmResult').hidden=false;
 }
+var tgName=null,tgO=null;
+function openTogether(name){
+  tgName=name;tgO=gmOuting;
+  document.getElementById('tgYou').textContent=initials(USER_NAME);
+  document.getElementById('tgThem').textContent=(name.replace(/[^A-Za-z]/g,'').slice(0,1).toUpperCase()||'?');
+  document.getElementById('tgTitle').textContent="You're going with "+name;
+  document.getElementById('tgLead').textContent=tgO.t+' · you’ll meet at the venue.';
+  document.getElementById('tgBtn').textContent='Buy my seat on webook · SAR '+tgO.price;
+  go('together');
+}
+function doTogether(){confetti();toast('Booked — going to '+tgO.t+' with '+tgName+'. Chat unlocked 🎉');setTimeout(function(){go('timeline');},1800);}
 
 /* ===== notify screen ===== */
 function renderNotify(){var w=document.getElementById('notifyList');w.innerHTML='';NOTIFY.forEach(function(nn){var on=!!notifyState[nn.id];var el=document.createElement('div');el.className='ncard'+(on?' on':'');el.innerHTML='<div class="th" style="background:'+nn.g+'">'+nn.emo+'<span class="lock">🔒</span></div><div class="c"><h3>'+nn.t+'</h3><div class="sub">'+nn.sub+'</div></div><button class="nbtn'+(on?' on':'')+'" id="nb-'+nn.id+'">'+(on?'✓ Watching':'🔔 Notify me')+'</button>';w.appendChild(el);el.querySelector('#nb-'+nn.id).onclick=function(e){e.stopPropagation();toggleNotify(nn.id);};});var cnt=Object.keys(notifyState).filter(function(k){return notifyState[k];}).length;document.getElementById('notifyCount').textContent=cnt;}
 function toggleNotify(id){notifyState[id]=!notifyState[id];renderNotify();toast(notifyState[id]?"Added to watch-list — you'll get 24h early access":"Removed from watch-list");}
 
 /* ===== nav / ui ===== */
-var STEP={swipe:"Step 1 of 4",free:"Step 2 of 4",you:"Step 3 of 4",circle:"Manage circle",timeline:"Step 4 of 4",share:"Share your winter",outing:"Your plan",book:"Checkout",payown:"Everyone pays own",tracker:"Payment tracker",match:"AI matching",gomatch:"AI matching",blind:"Your table",resale:"Sold out → resale",notify:"Plan ahead"};
+var STEP={swipe:"Step 1 of 4",free:"Step 2 of 4",you:"Step 3 of 4",circle:"Manage circle",timeline:"Step 4 of 4",share:"Share your winter",outing:"Your plan",book:"Checkout",payown:"Everyone pays own",tracker:"Payment tracker",match:"AI matching",gomatch:"AI matching",together:"Going together",blind:"Your table",resale:"Sold out → resale",notify:"Plan ahead"};
 function go(id){closeMenu();[].slice.call(document.querySelectorAll('.screen')).forEach(function(s){s.classList.toggle('active',s.dataset.s===id);});document.getElementById('step').textContent=STEP[id]||'';var b=document.querySelector('.screen.active .body');if(b)b.scrollTop=0;if(id==='notify')renderNotify();if(id==='tracker')renderTracker();if(id==='you')renderCircles();if(id==='share')renderShare();}
 function openMenu(){document.getElementById('sheet').classList.add('show');}
 function closeMenu(){document.getElementById('sheet').classList.remove('show');}
@@ -1125,7 +1156,9 @@ function confetti(){var w=document.getElementById('confetti');var cs=['#ec1f82',
 
 /* init */
 (function(){var dk=document.getElementById('deck');dk.addEventListener('pointerdown',deckDown);window.addEventListener('pointermove',deckMove);window.addEventListener('pointerup',deckEnd);window.addEventListener('pointercancel',deckEnd);})();
-document.getElementById('swipeLead').textContent='Drag a card — or tap ✓ ? ✕ below. '+EVENTS.length+' to swipe, no limit.';
+/* personalize: each session gets its own order (stand-in for per-user ranking) */
+(function(){for(var i=EVENTS.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=EVENTS[i];EVENTS[i]=EVENTS[j];EVENTS[j]=t;}})();
+document.getElementById('swipeLead').textContent='Picked for you — '+EVENTS.length+' to swipe. Drag or tap ✓ ? ✕. No limit.';
 renderCats();buildDeck();
 renderMtabs();renderCal();renderWho();
 setName('Omar');renderCircles();
