@@ -1204,7 +1204,7 @@ function confetti(){var w=document.getElementById('confetti');var cs=['#ec1f82',
 (function(){var dk=document.getElementById('deck');dk.addEventListener('pointerdown',deckDown);window.addEventListener('pointermove',deckMove);window.addEventListener('pointerup',deckEnd);window.addEventListener('pointercancel',deckEnd);})();
 /* personalize: each session gets its own order (stand-in for per-user ranking) */
 (function(){for(var i=EVENTS.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=EVENTS[i];EVENTS[i]=EVENTS[j];EVENTS[j]=t;}})();
-document.getElementById('swipeLead').textContent='Picked for you — '+EVENTS.length+' to swipe. Drag a card, or tap ✓ ? ✕.';
+document.getElementById('swipeLead').textContent='Picked for you — '+EVENTS.length+' to swipe. Drag a card, or tap ✓ ? ✕. Let\'s see who matches your vibe.';
 renderCats();buildDeck();updateCounts();
 renderMtabs();renderCal();renderWho();
 setName('Omar');renderCircles();
