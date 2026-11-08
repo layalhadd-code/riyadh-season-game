@@ -71,7 +71,9 @@ button{font-family:inherit}
 .card{position:absolute;inset:0;border-radius:0;overflow:hidden;border:none;
   background:#15131b;display:flex;flex-direction:column;justify-content:flex-end;transition:transform .35s, opacity .35s}
 .card .art{position:absolute;inset:0;display:grid;place-items:center;font-size:92px;filter:saturate(1.1)}
-.card img.art{width:100%;height:100%;object-fit:cover;object-position:top center;display:block;filter:none}
+.card .artwrap{position:absolute;inset:0;overflow:hidden;background:#0b0b0f}
+.card .artbg{position:absolute;inset:-8%;background-size:cover;background-position:center;filter:blur(34px) brightness(.82) saturate(1.25);transform:scale(1.35)}
+.card .artimg{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;object-position:center top;display:block}
 .card .scrim{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.92) 0%,rgba(0,0,0,.78) 13%,rgba(0,0,0,.42) 27%,rgba(0,0,0,0) 50%)}
 .card .cat{position:absolute;top:14px;left:14px;background:rgba(0,0,0,.55);border:1px solid rgba(255,255,255,.18);
   padding:5px 12px;border-radius:999px;font-size:12px;font-weight:600;backdrop-filter:blur(4px)}
@@ -822,7 +824,7 @@ function buildDeck(){
     var e=EVENTS[order[k]];
     var card=document.createElement('div');card.className='card';card.style.zIndex=10+(order.length-k);card.dataset.eid=e.id;
     var img=IMG[e.id];
-    var art=img?'<img class="art photo" src="'+img+'" alt="" loading="eager" decoding="async">':'<div class="art" style="background:'+e.g+'">'+e.emo+'</div>';
+    var art=img?'<div class="artwrap"><div class="artbg" style="background-image:url(\''+img+'\')"></div><img class="artimg" src="'+img+'" alt="" decoding="async"></div>':'<div class="art" style="background:'+e.g+'">'+e.emo+'</div>';
     var meta='<div class="meta"><h2>'+e.t+'</h2><div class="when">'+e.when+'</div><div class="venue">'+e.venue+'</div><div class="pr"><span class="price">'+e.price+'</span><span class="fr">'+e.fr+'</span></div></div>';
     card.innerHTML=art+'<div class="scrim"></div><div class="cat">'+e.cat+'</div>'+flagFor(e)+meta;
     deck.insertBefore(card,deck.firstChild);
