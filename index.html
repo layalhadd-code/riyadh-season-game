@@ -95,6 +95,7 @@ button{font-family:inherit}
   text-align:center;gap:10px;padding:24px;border:1px dashed var(--line);border-radius:22px}
 .deck.done .empty{display:flex}
 .swipebar{flex:0 0 auto;padding:2px 0 2px}
+.deck.done ~ .swipebar{display:none}
 
 /* CALENDAR */
 .mtabs{display:flex;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:4px;margin:4px 0 12px;gap:2px}
@@ -349,7 +350,7 @@ button{font-family:inherit}
         <div class="swipebar">
           <div class="counts" id="counts">
             <span><b id="cYes">0</b> Yes</span><span><b id="cMaybe">0</b> Maybe</span>
-            <span><b id="cNo">0</b> No</span><span class="nl">No limit</span>
+            <span><b id="cNo">0</b> No</span>
           </div>
           <div class="swipebtns">
             <button class="sb no" onclick="swipe('no')" aria-label="No">✕</button>
@@ -370,8 +371,7 @@ button{font-family:inherit}
         <div class="cal" id="cal"></div>
         <div class="legend">
           <span><span class="dot" style="background:var(--pink)"></span>Free</span>
-          <span><span class="dot" style="background:#17171d"></span>Busy</span>
-          <span style="color:var(--mut2)">Tap days to toggle</span>
+          <span style="color:var(--mut2)">Tap the days you're free</span>
         </div>
         <div class="subh">Best times</div>
         <div class="chips">
@@ -406,9 +406,11 @@ button{font-family:inherit}
         </div>
         <div class="subh" style="display:flex;align-items:center;justify-content:space-between">Your circles <button class="newbtn" onclick="newCircle()">+ New circle</button></div>
         <div id="circles"></div>
-        <div class="hook">
-          <div class="bot">🤖</div>
-          <p><b>The taste game stays as the hook.</b> Lama guessed 7 of your 9 picks. She beat the AI — then you both started planning.</p>
+        <div class="subh">Matching &amp; privacy</div>
+        <div class="ncard">
+          <div class="th" style="background:linear-gradient(135deg,#17304f,#0a1322)">🧭</div>
+          <div class="c"><h3>List me for stranger matching</h3><div class="sub">When a plan has no one from your circles, let verified members who share your taste invite you. Your name &amp; number stay private until you both opt in.</div></div>
+          <button class="nbtn" id="pubBtn" onclick="togglePublic()">Off</button>
         </div>
       </div>
       <div class="actionbar"><button class="btn primary" onclick="go('timeline')">See the winter AI built</button></div>
@@ -839,13 +841,15 @@ function deckEnd(){if(!drag)return;var dx=drag.dx,dy=drag.dy,c=drag.card;drag=nu
 var MONTHS=["Nov","Dec","Jan","Feb"],curMonth="Dec";
 var DEC_FREE=[3,4,5,10,11,12,18,19,27,31],DEC_BUSY=[24,25,26],DEC_START=2;
 function renderMtabs(){var w=document.getElementById('mtabs');w.innerHTML='';MONTHS.forEach(function(mo){var b=document.createElement('div');b.className='mtab'+(mo===curMonth?' on':'');b.textContent=mo;b.onclick=function(){curMonth=mo;renderMtabs();renderCal();};w.appendChild(b);});}
-function renderCal(){var cal=document.getElementById('cal');cal.innerHTML='';["Su","Mo","Tu","We","Th","Fr","Sa"].forEach(function(d){var e=document.createElement('div');e.className='dow';e.textContent=d;cal.appendChild(e);});var days=curMonth==="Dec"?31:(curMonth==="Nov"?30:31);var start=curMonth==="Dec"?DEC_START:(curMonth==="Nov"?6:(curMonth==="Jan"?4:0));for(var i=0;i<start;i++){var e=document.createElement('div');e.className='day empty';cal.appendChild(e);}for(var d=1;d<=days;d++){var cell=document.createElement('div');cell.className='day';cell.textContent=d;if(curMonth==="Dec"){if(DEC_FREE.indexOf(d)>=0)cell.className='day free';else if(DEC_BUSY.indexOf(d)>=0)cell.className='day busy';}cell.onclick=(function(c){return function(){if(c.classList.contains('busy')){c.className='day';}else if(c.classList.contains('free')){c.className='day busy';}else{c.className='day free';}};})(cell);cal.appendChild(cell);}}
+function renderCal(){var cal=document.getElementById('cal');cal.innerHTML='';["Su","Mo","Tu","We","Th","Fr","Sa"].forEach(function(d){var e=document.createElement('div');e.className='dow';e.textContent=d;cal.appendChild(e);});var days=curMonth==="Dec"?31:(curMonth==="Nov"?30:31);var start=curMonth==="Dec"?DEC_START:(curMonth==="Nov"?6:(curMonth==="Jan"?4:0));for(var i=0;i<start;i++){var e=document.createElement('div');e.className='day empty';cal.appendChild(e);}for(var d=1;d<=days;d++){var cell=document.createElement('div');cell.className='day';cell.textContent=d;cell.onclick=(function(c){return function(){c.classList.toggle('free');};})(cell);cal.appendChild(cell);}}
 function setBudget(btn,val){[].slice.call(document.querySelectorAll('#budget .pill')).forEach(function(p){p.classList.remove('on');});btn.classList.add('on');USER.budget=val;}
 var WHO=["Concerts & music","Sports & matches","Theater & shows","Dining & outdoors"];
 function renderWho(){var w=document.getElementById('whoWrap');w.innerHTML='';var opts=["Solo","Partner","Kids","Friends"];var pre=[3,3,2,1];WHO.forEach(function(name,idx){var box=document.createElement('div');box.className='who';var h='<div class="n">'+name+'</div><div class="pills">';opts.forEach(function(o,j){h+='<button class="pill'+(j===pre[idx]?' on':'')+'">'+o+'</button>';});box.innerHTML=h+'</div>';w.appendChild(box);[].slice.call(box.querySelectorAll('.pill')).forEach(function(p){p.onclick=function(){[].slice.call(box.querySelectorAll('.pill')).forEach(function(x){x.classList.remove('on');});p.classList.add('on');};});});}
 
 /* ===== identity ===== */
 function setName(v){USER_NAME=v||"You";document.getElementById('meAv').textContent=initials(USER_NAME);}
+var publicMatch=false;
+function togglePublic(){publicMatch=!publicMatch;var b=document.getElementById('pubBtn');b.textContent=publicMatch?'✓ On':'Off';b.classList.toggle('on',publicMatch);toast(publicMatch?'You’re discoverable for stranger matching — kept private until you both opt in':'Hidden — you won’t be matched with strangers');}
 function renderCircles(){
   var w=document.getElementById('circles');w.innerHTML='';
   if(!CIRCLES.length){
@@ -1182,7 +1186,7 @@ function confetti(){var w=document.getElementById('confetti');var cs=['#ec1f82',
 (function(){var dk=document.getElementById('deck');dk.addEventListener('pointerdown',deckDown);window.addEventListener('pointermove',deckMove);window.addEventListener('pointerup',deckEnd);window.addEventListener('pointercancel',deckEnd);})();
 /* personalize: each session gets its own order (stand-in for per-user ranking) */
 (function(){for(var i=EVENTS.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=EVENTS[i];EVENTS[i]=EVENTS[j];EVENTS[j]=t;}})();
-document.getElementById('swipeLead').textContent='Picked for you — '+EVENTS.length+' to swipe. Drag or tap ✓ ? ✕. No limit.';
+document.getElementById('swipeLead').textContent='Picked for you — '+EVENTS.length+' to swipe. Drag a card, or tap ✓ ? ✕.';
 renderCats();buildDeck();
 renderMtabs();renderCal();renderWho();
 setName('Omar');renderCircles();
