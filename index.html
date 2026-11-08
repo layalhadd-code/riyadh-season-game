@@ -151,11 +151,11 @@ button{font-family:inherit}
 .monthhead .ln{flex:1;height:1px;background:var(--line)}
 .monthhead .ct{color:var(--mut);font-size:12px}
 .itcard{display:flex;gap:12px;background:var(--panel);border:1px solid var(--line);border-radius:16px;
-  padding:10px;margin-bottom:11px;align-items:stretch}
+  padding:10px;margin-bottom:11px;align-items:center}
 .itcard.tap{cursor:pointer}
 .itcard.tap:active{border-color:var(--pink)}
-.itcard .thumb{width:70px;flex:0 0 auto;border-radius:12px;display:grid;place-items:center;font-size:28px}
-.itcard .thumb.photo{background-size:cover !important;background-position:center;font-size:0}
+.itcard .thumb{width:76px;height:76px;flex:0 0 auto;border-radius:12px;display:grid;place-items:center;font-size:28px;overflow:hidden}
+.itcard .thumb.photo{background-size:cover !important;background-position:top center;font-size:0}
 .itcard .c{flex:1;min-width:0}
 .itcard .d{color:var(--pink2);font-weight:700;font-size:13px}
 .itcard h3{margin:2px 0 3px;font-size:16px;line-height:1.1}
@@ -860,9 +860,12 @@ function circleSearch(q){
 function addToCircle(nm){curCircle.members.push({nm:nm,st:'invited'});renderCircle();toast('Invited '+nm+' — webook notification + WhatsApp sent ✓');}
 /* per-outing circle choice */
 function circleById(id){for(var i=0;i<CIRCLES.length;i++)if(CIRCLES[i].id===id)return CIRCLES[i];return null;}
-function circleToMembers(c){var list=[m("You","you",0)];c.members.forEach(function(x){list.push(m(x.nm,"in",0));});return list;}
+function circleToMembers(c){var list=[m("You","you",0)];c.members.forEach(function(x){list.push(m(x.nm,"pending",0));});return list;}
 function setOutingCircle(o,id){var c=circleById(id);if(!c)return;o.chosenId=id;o.group=c.nm;o.members=circleToMembers(c);}
 function pickCircle(id){setOutingCircle(curOuting,id);renderOuting();}
+function inviteCircle(){curOuting.members.forEach(function(x){if(x.status==='pending')x.status='invited';});renderOuting();toast('Invited '+curOuting.group+' — webook notification + WhatsApp sent ✓');}
+function rsvp(nm){var mem=curOuting.members.filter(function(x){return x.nm===nm;})[0];if(mem){mem.status='in';renderOuting();toast(nm+' is in ✓');}}
+function goingMembers(){return (curOuting.members||[]).filter(function(x){return x.status==='in'||x.status==='you';});}
 
 /* ===== timeline ===== */
 function thumbHtml(o,cls){return o.img?'<div class="'+cls+' photo" style="background-image:url(\''+o.img+'\')"></div>':'<div class="'+cls+'" style="background:linear-gradient(135deg,#2a1248,#0c0716)">'+o.emo+'</div>';}
@@ -911,16 +914,17 @@ function doShare(){
 function openOuting(o){curOuting=o;renderOuting();go('outing');}
 function openOutingById(id){var o=outing(id);if(o)openOuting(o);}
 function memRow(mem,mode){
-  var btn;
+  var btn,sub='';
   if(mode==='commit'){
     if(mem.status==="you")btn='<span class="st you">In · you</span>';
     else if(mem.status==="in")btn='<span class="st in">In ✓</span>';
-    else btn='<button class="st nudge" onclick="toast(\'Nudged '+mem.nm+'\')">Nudge</button>';
+    else if(mem.status==="invited"){btn='<button class="st nudge" onclick="rsvp(\''+mem.nm+'\')">✓ In</button>';sub='Invited · awaiting reply';}
+    else {btn='<span class="st pending">Not invited</span>';}
   }else{ /* pay */
     if(mem.paid)btn='<span class="st paid">Paid ✓</span>';
     else btn='<button class="st nudge" onclick="remind(\''+mem.nm+'\')">Remind</button>';
+    sub=mem.paid?'E-ticket in webook wallet':(mem.status==="you"?'':'Link sent · awaiting payment');
   }
-  var sub=mode==='pay'?(mem.paid?'E-ticket in webook wallet':(mem.status==="you"?'':'Link sent · awaiting payment')):'';
   return '<div class="mem"><span class="av" style="background:'+mem.c+'">'+ini(mem.nm)+'</span><span class="nm">'+(mem.nm==="You"?USER_NAME+" (you)":mem.nm)+(sub?'<small>'+sub+'</small>':'')+'</span>'+btn+'</div>';
 }
 function renderOuting(){
@@ -960,9 +964,10 @@ function renderOuting(){
     var link='webook.com/w/'+o.id+'-'+(1000+o.t.length);
     h+='<div class="invite"><div style="font-weight:800;font-size:15px">Invite '+picked.nm+' to join</div>'+
       '<div class="msg">'+USER_NAME+': Let’s do <b>'+o.t+'</b> on '+o.d+'! Tap to join & grab your seat 👇<span class="lnk">'+link+'</span></div>'+
-      '<button class="btn wa" onclick="toast(\'Opening WhatsApp to '+picked.nm+'…\')">🟢 Invite on WhatsApp</button>'+
-      '<div class="row2" style="margin-top:8px"><button class="btn ghost" onclick="toast(\'Invite link copied\')">Copy link</button><button class="btn ghost" onclick="toast(\'Shared to '+picked.nm+'\')">Share</button></div></div>'+
+      '<button class="btn wa" onclick="inviteCircle()">🟢 Invite on WhatsApp</button>'+
+      '<div class="row2" style="margin-top:8px"><button class="btn ghost" onclick="inviteCircle()">Copy link</button><button class="btn ghost" onclick="inviteCircle()">Share</button></div></div>'+
       '<div class="proglab"><b>'+inCount+' of '+mem.length+' in</b><span style="color:var(--mut)">'+picked.nm+'</span></div><div class="prog"><span style="width:'+pct+'%"></span></div>'+
+      '<div class="src" style="color:var(--mut);margin:-2px 0 4px">'+(mem.some(function(x){return x.status==="invited";})?'Awaiting replies — tap ✓ In as each person accepts.':(inCount>1?'Your crew is in. Ready to book.':'Invite your circle so they can RSVP.'))+'</div>'+
       mem.map(function(x){return memRow(x,'commit');}).join('');
     h+='<div class="handoff" style="margin-top:12px;background:rgba(59,130,246,.08);border-color:rgba(59,130,246,.3);color:#cfe0ff"><span class="wbk" style="color:#93c5fd">🤝 None of your circle free?</span>Match me with a verified webook member who’s also going to this event and shares your taste.<button class="btn ghost" style="margin-top:9px" onclick="openGoMatch()">Match me with someone going →</button></div>';
     body.innerHTML=h;
@@ -975,7 +980,7 @@ function notifyOuting(){notifyState[curOuting.id]=!notifyState[curOuting.id];ren
 var viaAdded=false;
 function openBook(){viaAdded=false;renderBook();setPay('own');go('book');}
 function renderBook(){
-  var o=curOuting,n=o.members.length;
+  var o=curOuting,n=goingMembers().length;
   var cart=document.getElementById('bkCart');
   var addonPP=o.group==="Date Night"?0:30;
   var addonName=o.group==="Date Night"?"":"Boulevard World passes";
@@ -1007,7 +1012,7 @@ function setPay(mode){
 function doBook(){
   if(payMode==='own'){renderPayown();go('payown');}
   else{
-    curOuting.members.forEach(function(x){x.paid=true;});
+    goingMembers().forEach(function(x){x.paid=true;});
     confetti();toast('Paid on webook — tickets sent to all '+curOuting.members.length+' wallets ✓');
     renderTracker();setTimeout(function(){go('tracker');},1200);
   }
@@ -1017,27 +1022,27 @@ function doBook(){
 function renderPayown(){
   var o=curOuting;
   /* mark: you paid, others link-sent (unpaid) */
-  o.members.forEach(function(x){x.paid=(x.status==="you");});
+  goingMembers().forEach(function(x){x.paid=(x.status==="you");});
   document.getElementById('poTitle').textContent='Each person pays for their seat';
   document.getElementById('poSender').textContent=USER_NAME;
   document.getElementById('poMsg').textContent='Join us for '+o.t+' on '+o.d+'! Grab your seat 👇';
   document.getElementById('poLink').textContent='webook.com/w/'+o.id+'-'+(1000+o.t.length);
   document.getElementById('poPrice').textContent='Your seat · SAR '+perPerson();
   document.getElementById('poLead').textContent='Everyone in '+o.group+' gets their own webook link. No one fronts the money.';
-  document.getElementById('poMembers').innerHTML=o.members.filter(function(x){return x.status!=="you";}).map(function(x){return '<div class="mem"><span class="av" style="background:'+x.c+'">'+ini(x.nm)+'</span><span class="nm">'+x.nm+'<small>Link sent on WhatsApp</small></span><span class="st pending">Sent</span></div>';}).join('');
+  document.getElementById('poMembers').innerHTML=goingMembers().filter(function(x){return x.status!=="you";}).map(function(x){return '<div class="mem"><span class="av" style="background:'+x.c+'">'+ini(x.nm)+'</span><span class="nm">'+x.nm+'<small>Link sent on WhatsApp</small></span><span class="st pending">Sent</span></div>';}).join('');
 }
 
 /* ===== tracker ===== */
 function renderTracker(){
   var o=curOuting;
   document.getElementById('trTitle').textContent=o.t+' — who’s paid';
-  var paid=o.members.filter(function(x){return x.paid;}).length,n=o.members.length;
+  var g=goingMembers(),paid=g.filter(function(x){return x.paid;}).length,n=g.length;
   var left=n-paid;
   document.getElementById('trCount').textContent=paid;
   document.getElementById('trTotal').textContent=n;
   document.getElementById('trLeft').textContent=left?left+' still to pay':'everyone paid 🎉';
   document.getElementById('trBar').style.width=Math.round(paid/n*100)+'%';
-  document.getElementById('trMembers').innerHTML=o.members.map(function(x){return memRow(x,'pay');}).join('');
+  document.getElementById('trMembers').innerHTML=g.map(function(x){return memRow(x,'pay');}).join('');
   var btn=document.getElementById('trBtn');
   if(left){btn.textContent='Nudge everyone pending';btn.className='btn primary';btn.disabled=false;}
   else{btn.textContent='Everyone paid — see you there 🎉';btn.className='btn ghost';btn.disabled=true;}
@@ -1048,7 +1053,7 @@ function remind(nm){
   if(mem){mem.paid=true;toast(nm+' paid — ticket in their wallet ✓');renderTracker();}
 }
 function nudgeAll(){
-  curOuting.members.forEach(function(x){x.paid=true;});
+  goingMembers().forEach(function(x){x.paid=true;});
   confetti();toast('Nudged everyone — all paid 🎉');renderTracker();
 }
 
