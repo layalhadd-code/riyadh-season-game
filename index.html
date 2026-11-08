@@ -117,6 +117,12 @@ button{font-family:inherit}
 .me label{display:block;color:var(--mut);font-size:11px;letter-spacing:.3px;margin-bottom:3px}
 .me input{width:100%;background:#0e0e12;border:1px solid var(--line);border-radius:10px;color:#fff;font-size:17px;font-weight:700;padding:9px 11px}
 .me .src{color:var(--mut2);font-size:11px;margin-top:5px}
+.searchbox{width:100%;background:#0e0e12;border:1px solid var(--line);border-radius:12px;color:#fff;font-size:16px;padding:13px 13px;margin-bottom:8px}
+.sresult{display:flex;align-items:center;gap:12px;padding:11px 2px;border-bottom:1px solid #17171d}
+.sresult .nm{flex:1;min-width:0}
+.sresult .nm b{font-size:15px}
+.sresult .nm small{display:block;color:var(--mut);font-size:12px}
+.newbtn{background:var(--panel);color:#fff;border:1px solid var(--line);border-radius:999px;padding:7px 13px;font-weight:700;cursor:pointer;font-size:12.5px}
 .circle{display:flex;align-items:center;justify-content:space-between;background:var(--panel);
   border:1px solid var(--line);border-radius:14px;padding:13px 14px;margin-bottom:10px}
 .circle .nm{font-weight:700}.circle .sub{color:var(--mut);font-size:12px}
@@ -391,7 +397,7 @@ button{font-family:inherit}
             <div class="src">🔒 From your webook profile · tap to edit</div>
           </div>
         </div>
-        <div class="subh">Your circles</div>
+        <div class="subh" style="display:flex;align-items:center;justify-content:space-between">Your circles <button class="newbtn" onclick="newCircle()">+ New circle</button></div>
         <div id="circles"></div>
         <div class="hook">
           <div class="bot">🤖</div>
@@ -399,6 +405,31 @@ button{font-family:inherit}
         </div>
       </div>
       <div class="actionbar"><button class="btn primary" onclick="go('timeline')">See the winter AI built</button></div>
+    </section>
+
+    <!-- 3b CIRCLE DETAIL -->
+    <section class="screen" data-s="circle">
+      <div class="body">
+        <div class="backlink" onclick="go('you')">‹ Your circles</div>
+        <div class="me" style="margin-bottom:12px">
+          <div class="big" id="circAv" style="background:#8b5cf6">TB</div>
+          <div class="c"><label>CIRCLE NAME</label><input id="circName" value="The Boys" oninput="setCircleName(this.value)" autocomplete="off"><div class="src">Saved on webook · reuse it for every outing</div></div>
+        </div>
+        <div class="handoff" style="background:rgba(37,211,102,.07);border-color:rgba(37,211,102,.3);color:#cdeedd">
+          <span class="wbk" style="color:#9ff0c6">🔔 How members are added</span>
+          You add webook users here. Each gets a <b style="color:#fff">webook notification</b> + a <b style="color:#fff">WhatsApp nudge</b> that opens the circle in webook. webook holds the circle — WhatsApp just pings them.
+        </div>
+        <div class="subh" id="circMemH">Members</div>
+        <div id="circMembers"></div>
+        <div class="subh">Add people from webook</div>
+        <input id="circSearch" class="searchbox" placeholder="Search webook users by name or @handle…" oninput="circleSearch(this.value)" autocomplete="off">
+        <div id="searchResults"></div>
+        <div class="subh">Not on webook yet?</div>
+        <button class="btn wa" onclick="toast('Opening WhatsApp to share an invite link…')">🟢 Invite by WhatsApp link</button>
+        <div class="row2" style="margin-top:8px"><button class="btn ghost" onclick="toast('Invite link copied')">Copy link</button><button class="btn ghost" onclick="toast('Shared')">Share</button></div>
+        <div class="src" style="margin-top:8px;color:var(--mut)">Anyone who taps the link signs up → joins your circle. That's the growth loop.</div>
+      </div>
+      <div class="actionbar"><button class="btn primary" onclick="go('timeline')">Done — see my winter</button></div>
     </section>
 
     <!-- 4 TIMELINE -->
@@ -605,16 +636,20 @@ var CATS=["All","Sports","Concerts","Zones","Shows","Dining","Culture","Experien
 /* ===== identity ===== */
 var USER_NAME="Omar";
 function initials(n){n=(n||"").trim();if(!n)return "ME";var p=n.split(/\s+/);return (p.length>1?(p[0][0]+p[1][0]):n.slice(0,2)).toUpperCase();}
-var COLORS={Faisal:"#5aa9ff",Khalid:"#ffd166",Majed:"#6ee7b7",Turki:"#c4a7ff",Ziyad:"#ff9ecb",Dana:"#c4a7ff",Reem:"#ffd166",Hind:"#5aa9ff",Lama:"#6ee7b7",Noura:"#c4a7ff",Sara:"#8be0ff",Partner:"#ff9ecb"};
+var COLORS={Faisal:"#5aa9ff",Khalid:"#ffd166",Majed:"#6ee7b7",Turki:"#c4a7ff",Ziyad:"#ff9ecb",Dana:"#c4a7ff",Reem:"#ffd166",Hind:"#5aa9ff",Lama:"#6ee7b7",Noura:"#c4a7ff",Sara:"#8be0ff",Partner:"#ff9ecb",Yousef:"#5aa9ff",Abdullah:"#6ee7b7",Sultan:"#ffd166",Reema:"#ff9ecb",Saud:"#8be0ff",Layan:"#c4a7ff",Faris:"#5aa9ff",Maha:"#6ee7b7",Nawaf:"#ffd166",Hessa:"#ff9ecb"};
 function m(nm,status,paid){return {nm:nm,status:status,paid:!!paid,c:nm==="You"?"#ff6ba8":(COLORS[nm]||"#8be0ff")};}
 function ini(nm){return nm==="You"?initials(USER_NAME):nm.slice(0,2).toUpperCase();}
 
+/* circles the user owns (you are the implicit owner; members are others) */
 var CIRCLES=[
- {nm:"The Boys",sub:"6 members",names:["Faisal","Khalid","Majed","Turki"],more:true},
- {nm:"Family",sub:"4 members",names:["Dana","Reem","Hind"]},
- {nm:"Uni Friends",sub:"7 members",names:["Lama","Noura","Sara"],more:true},
- {nm:"Date Night",sub:"2 members",names:["Partner"]}
+ {id:"boys",nm:"The Boys",members:[{nm:"Faisal",st:"member"},{nm:"Khalid",st:"member"},{nm:"Majed",st:"member"},{nm:"Turki",st:"member"},{nm:"Ziyad",st:"member"}]},
+ {id:"family",nm:"Family",members:[{nm:"Dana",st:"member"},{nm:"Reem",st:"member"},{nm:"Hind",st:"member"}]},
+ {id:"uni",nm:"Uni Friends",members:[{nm:"Lama",st:"member"},{nm:"Noura",st:"member"},{nm:"Sara",st:"member"}]},
+ {id:"date",nm:"Date Night",members:[{nm:"Partner",st:"member"}]}
 ];
+/* other webook users you can search + add */
+var WEBOOK_USERS=[{nm:"Yousef",h:"@yousef"},{nm:"Abdullah",h:"@abdullah"},{nm:"Sultan",h:"@sultan"},{nm:"Reema",h:"@reema"},{nm:"Saud",h:"@saud"},{nm:"Layan",h:"@layan"},{nm:"Faris",h:"@faris"},{nm:"Maha",h:"@maha"},{nm:"Nawaf",h:"@nawaf"},{nm:"Hessa",h:"@hessa"}];
+var curCircle=null;
 
 /* ===== the winter timeline (each outing carries its own group + members) ===== */
 var OUTINGS=[
@@ -724,7 +759,42 @@ function renderWho(){var w=document.getElementById('whoWrap');w.innerHTML='';var
 
 /* ===== identity ===== */
 function setName(v){USER_NAME=v||"You";document.getElementById('meAv').textContent=initials(USER_NAME);}
-function renderCircles(){var w=document.getElementById('circles');w.innerHTML='';CIRCLES.forEach(function(c){var avs='<span class="av" style="background:#ff6ba8">'+initials(USER_NAME)+'</span>'+c.names.map(function(n){return '<span class="av" style="background:'+(COLORS[n]||'#8be0ff')+'">'+n.slice(0,2).toUpperCase()+'</span>';}).join('');if(c.more)avs+='<span class="av more">+</span>';var el=document.createElement('div');el.className='circle';el.innerHTML='<div><div class="nm">'+c.nm+'</div><div class="sub">'+c.sub+'</div></div><div class="avs">'+avs+'</div>';w.appendChild(el);});}
+function renderCircles(){
+  var w=document.getElementById('circles');w.innerHTML='';
+  CIRCLES.forEach(function(c){
+    var mem=c.members;
+    var avs='<span class="av" style="background:#ff6ba8">'+initials(USER_NAME)+'</span>'+mem.slice(0,3).map(function(x){return '<span class="av" style="background:'+(COLORS[x.nm]||'#8be0ff')+'">'+x.nm.slice(0,2).toUpperCase()+'</span>';}).join('');
+    if(mem.length>3)avs+='<span class="av more">+</span>';
+    var joined=mem.filter(function(x){return x.st==='member';}).length+1;
+    var el=document.createElement('div');el.className='circle';el.style.cursor='pointer';
+    el.innerHTML='<div><div class="nm">'+c.nm+'</div><div class="sub">'+joined+' of '+(mem.length+1)+' joined · tap to manage</div></div><div class="avs">'+avs+'</div>';
+    el.onclick=(function(id){return function(){openCircle(id);};})(c.id);
+    w.appendChild(el);
+  });
+}
+function openCircle(id){for(var i=0;i<CIRCLES.length;i++)if(CIRCLES[i].id===id){curCircle=CIRCLES[i];break;}renderCircle();go('circle');}
+function newCircle(){var c={id:'c'+Date.now(),nm:'New circle',members:[]};CIRCLES.push(c);curCircle=c;renderCircle();go('circle');setTimeout(function(){var el=document.getElementById('circName');if(el){el.focus();el.select();}},60);}
+function setCircleName(v){curCircle.nm=v||'Circle';document.getElementById('circAv').textContent=(v||'C').slice(0,2).toUpperCase();}
+function renderCircle(){
+  var c=curCircle,mem=c.members;
+  document.getElementById('circName').value=c.nm;
+  document.getElementById('circAv').textContent=c.nm.slice(0,2).toUpperCase();
+  document.getElementById('circMemH').textContent='Members ('+(mem.length+1)+')';
+  var h='<div class="mem"><span class="av" style="background:#ff6ba8">'+initials(USER_NAME)+'</span><span class="nm">'+USER_NAME+' (you)<small>Owner</small></span><span class="st you">Owner</span></div>';
+  h+=mem.map(function(x){var badge=x.st==='invited'?'<span class="st pending">Invited · notified</span>':'<span class="st in">Member</span>';return '<div class="mem"><span class="av" style="background:'+(COLORS[x.nm]||'#8be0ff')+'">'+x.nm.slice(0,2).toUpperCase()+'</span><span class="nm">'+x.nm+'</span>'+badge+'</div>';}).join('');
+  document.getElementById('circMembers').innerHTML=h;
+  var s=document.getElementById('circSearch');if(s)s.value='';
+  document.getElementById('searchResults').innerHTML='';
+}
+function circleSearch(q){
+  var box=document.getElementById('searchResults');q=(q||'').trim().toLowerCase();
+  if(!q){box.innerHTML='';return;}
+  var have=curCircle.members.map(function(x){return x.nm.toLowerCase();});
+  var res=WEBOOK_USERS.filter(function(u){return have.indexOf(u.nm.toLowerCase())<0 && (u.nm.toLowerCase().indexOf(q)>=0||u.h.toLowerCase().indexOf(q)>=0);}).slice(0,6);
+  if(!res.length){box.innerHTML='<div class="src" style="color:var(--mut);padding:10px 2px">No webook user found — invite them by link below.</div>';return;}
+  box.innerHTML=res.map(function(u){return '<div class="sresult"><span class="av" style="background:'+(COLORS[u.nm]||'#8be0ff')+'">'+u.nm.slice(0,2).toUpperCase()+'</span><div class="nm"><b>'+u.nm+'</b><small>'+u.h+' · on webook</small></div><button class="addbtn" onclick="addToCircle(\''+u.nm+'\')">Add</button></div>';}).join('');
+}
+function addToCircle(nm){curCircle.members.push({nm:nm,st:'invited'});renderCircle();toast('Invited '+nm+' — webook notification + WhatsApp sent ✓');}
 
 /* ===== timeline ===== */
 function thumbHtml(o,cls){return o.img?'<div class="'+cls+' photo" style="background-image:url(\''+o.img+'\')"></div>':'<div class="'+cls+'" style="background:linear-gradient(135deg,#2a1248,#0c0716)">'+o.emo+'</div>';}
@@ -918,8 +988,8 @@ function renderNotify(){var w=document.getElementById('notifyList');w.innerHTML=
 function toggleNotify(id){notifyState[id]=!notifyState[id];renderNotify();toast(notifyState[id]?"Added to watch-list — you'll get 24h early access":"Removed from watch-list");}
 
 /* ===== nav / ui ===== */
-var STEP={swipe:"Step 1 of 4",free:"Step 2 of 4",you:"Step 3 of 4",timeline:"Step 4 of 4",outing:"Your plan",book:"Checkout",payown:"Everyone pays own",tracker:"Payment tracker",match:"AI matching",blind:"Your table",resale:"Sold out → resale",notify:"Plan ahead"};
-function go(id){closeMenu();[].slice.call(document.querySelectorAll('.screen')).forEach(function(s){s.classList.toggle('active',s.dataset.s===id);});document.getElementById('step').textContent=STEP[id]||'';var b=document.querySelector('.screen.active .body');if(b)b.scrollTop=0;if(id==='notify')renderNotify();if(id==='tracker')renderTracker();}
+var STEP={swipe:"Step 1 of 4",free:"Step 2 of 4",you:"Step 3 of 4",circle:"Manage circle",timeline:"Step 4 of 4",outing:"Your plan",book:"Checkout",payown:"Everyone pays own",tracker:"Payment tracker",match:"AI matching",blind:"Your table",resale:"Sold out → resale",notify:"Plan ahead"};
+function go(id){closeMenu();[].slice.call(document.querySelectorAll('.screen')).forEach(function(s){s.classList.toggle('active',s.dataset.s===id);});document.getElementById('step').textContent=STEP[id]||'';var b=document.querySelector('.screen.active .body');if(b)b.scrollTop=0;if(id==='notify')renderNotify();if(id==='tracker')renderTracker();if(id==='you')renderCircles();}
 function openMenu(){document.getElementById('sheet').classList.add('show');}
 function closeMenu(){document.getElementById('sheet').classList.remove('show');}
 var tT;
