@@ -727,7 +727,7 @@ function sessionDeck(){
   );
 }
 var EVENTS=sessionDeck();
-var IMG={"six-kings":"six-kings.jpg","crown-jewel":"crown-jewel.jpg","ufc":"ufc.jpg","blvd-world":"blvd-world.jpg","wonder":"wonder.jpg","toy-shop":"toy-shop.jpg","al-ommda":"al-ommda.jpg","groves":"groves.jpg","ethnosport":"ethnosport.jpg","via":"via.jpg","farmers":"farmers.jpg","formula-e":"formula-e.jpg","abu-bakr":"abu-bakr.jpg","pier":"pier.jpg","zodiac":"zodiac.jpg","gymkhana":"gymkhana.jpg","cutco":"cutco.jpg","cocomelon":"cocomelon.jpg","dolphin":"dolphin.jpg","zoo":"zoo.jpg","peekaboo":"peekaboo.jpg","powerslap":"powerslap.jpg","aldirah":"aldirah.jpg","seven":"seven.jpg","diva":"diva.jpg","escape":"escape.jpg","flyingsaudi":"flyingsaudi.jpg","pubg":"pubg.jpg","littlestar":"littlestar.jpg","eln":"eln.jpg","samad":"samad.jpg","layali":"layali.jpg","nye":"nye.jpg"}; /* nye KV v2 */
+var IMG={"six-kings":"six-kings.jpg","crown-jewel":"crown-jewel.jpg","ufc":"ufc.jpg","blvd-world":"blvd-world.jpg","wonder":"wonder.jpg","toy-shop":"toy-shop.jpg","al-ommda":"al-ommda.jpg","groves":"groves.jpg","ethnosport":"ethnosport.jpg","via":"via.jpg","farmers":"farmers.jpg","formula-e":"formula-e.jpg","abu-bakr":"abu-bakr.jpg","pier":"pier.jpg","zodiac":"zodiac.jpg","gymkhana":"gymkhana.jpg","cutco":"cutco.jpg","cocomelon":"cocomelon.jpg","dolphin":"dolphin.jpg","zoo":"zoo.jpg","peekaboo":"peekaboo.jpg","powerslap":"powerslap.jpg","aldirah":"aldirah.jpg","seven":"seven.jpg","diva":"diva.jpg","escape":"escape.jpg","flyingsaudi":"flyingsaudi.jpg","pubg":"pubg.jpg","littlestar":"littlestar.jpg","eln":"eln.jpg","samad":"samad.jpg","layali":"layali.jpg","nye":"nye.jpg","afc":"afc.jpg"};
 var CATS=["All","Sports","Concerts","Restaurants","Kids","Zones","Shows","Experiences","Culture"];
 
 /* ===== identity ===== */
@@ -813,18 +813,18 @@ var NOTIFY=[
 var notifyState={};
 
 /* ===== swipe ===== */
-var deckIdx=0,filter="All",order=[],yes=0,maybe=0,no=0;
+var deckIdx=0,filter="All",order=[],yes=0,maybe=0,no=0,decided={};
 function renderCats(){var w=document.getElementById('catchips');w.innerHTML='';CATS.forEach(function(c){var b=document.createElement('button');b.className='chip'+(c===filter?' on':'');b.textContent=c;b.onclick=function(){filter=c;renderCats();buildDeck();};w.appendChild(b);});}
 function flagFor(e){if(e.demand==="sold")return '<div class="flag sold">Sold out · resale</div>';if(e.demand==="hot")return '<div class="flag hot">🔥 Selling fast</div>';if(e.demand==="soon")return '<div class="flag soon">Not live yet</div>';return '';}
 function buildDeck(){
   var deck=document.getElementById('deck');
   [].slice.call(deck.querySelectorAll('.card')).forEach(function(c){c.remove();});
   deck.classList.remove('done');
-  order=EVENTS.map(function(e,i){return i;}).filter(function(i){return filter==='All'||EVENTS[i].cat===filter;});
+  order=EVENTS.map(function(e,i){return i;}).filter(function(i){return !decided[EVENTS[i].id]&&(filter==='All'||EVENTS[i].cat===filter);});
   deckIdx=0;
   for(var k=order.length-1;k>=0;k--){
     var e=EVENTS[order[k]];
-    var card=document.createElement('div');card.className='card';card.style.zIndex=10+(order.length-k);
+    var card=document.createElement('div');card.className='card';card.style.zIndex=10+(order.length-k);card.dataset.eid=e.id;
     var img=IMG[e.id];
     var art=img?'<div class="art photo" style="background-image:url(\''+img+'\')"></div>':'<div class="art" style="background:'+e.g+'">'+e.emo+'</div>';
     var meta='<div class="meta"><h2>'+e.t+'</h2><div class="when">'+e.when+'</div><div class="venue">'+e.venue+'</div><div class="pr"><span class="price">'+e.price+'</span><span class="fr">'+e.fr+'</span></div></div>';
@@ -836,7 +836,7 @@ function buildDeck(){
 function updateCounts(){document.getElementById('cYes').textContent=yes;document.getElementById('cMaybe').textContent=maybe;document.getElementById('cNo').textContent=no;var nx=document.getElementById('swipeNext');if(nx){if(yes>=5){nx.disabled=false;nx.textContent='Next: when are you free?';}else{nx.disabled=true;nx.textContent='Pick '+(5-yes)+' more you like ('+yes+'/5)';}}}
 function topCard(){var cs=document.getElementById('deck').querySelectorAll('.card');if(!cs.length)return null;var top=cs[0],z=-Infinity;for(var i=0;i<cs.length;i++){var zz=parseInt(cs[i].style.zIndex||'0',10);if(zz>z){z=zz;top=cs[i];}}return top;}
 function restack(){var cs=[].slice.call(document.getElementById('deck').querySelectorAll('.card'));cs.sort(function(a,b){return parseInt(b.style.zIndex||'0',10)-parseInt(a.style.zIndex||'0',10);});cs.forEach(function(c,i){if(drag&&drag.card===c)return;c.style.transition='transform .25s ease';c.style.transform=i===0?'none':'scale('+(1-i*.03)+') translateY('+(i*-8)+'px)';});}
-function doSwipeCard(dir){var deck=document.getElementById('deck');var top=topCard();if(!top)return;top.style.transition='transform .34s ease, opacity .34s ease';if(dir==='yes'){top.style.transform='translate(145%,-30px) rotate(16deg)';yes++;}else if(dir==='no'){top.style.transform='translate(-145%,-30px) rotate(-16deg)';no++;}else{top.style.transform='translateY(135%)';maybe++;}top.style.opacity='0';updateCounts();setTimeout(function(){top.remove();restack();if(!deck.querySelectorAll('.card').length){deck.classList.add('done');updateEmpty();}},330);}
+function doSwipeCard(dir){var deck=document.getElementById('deck');var top=topCard();if(!top)return;if(top.dataset.eid)decided[top.dataset.eid]=1;top.style.transition='transform .34s ease, opacity .34s ease';if(dir==='yes'){top.style.transform='translate(145%,-30px) rotate(16deg)';yes++;}else if(dir==='no'){top.style.transform='translate(-145%,-30px) rotate(-16deg)';no++;}else{top.style.transform='translateY(135%)';maybe++;}top.style.opacity='0';updateCounts();setTimeout(function(){top.remove();restack();if(!deck.querySelectorAll('.card').length){deck.classList.add('done');updateEmpty();}},330);}
 function updateEmpty(){var e=document.getElementById('emptyEmo'),t=document.getElementById('emptyTitle'),s=document.getElementById('emptySub');if(yes>0){e.textContent='🎉';t.textContent=yes+' things you’re into';s.textContent='Now tell us when you’re free.';}else{e.textContent='🤔';t.textContent='Nothing caught your eye?';s.textContent='No problem — here are more, different picks to try.';}}
 function moreOptions(){EVENTS=sessionDeck();for(var i=EVENTS.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1)),t=EVENTS[i];EVENTS[i]=EVENTS[j];EVENTS[j]=t;}filter='All';renderCats();buildDeck();toast('Fresh picks — more to swipe');}
 function swipe(dir){doSwipeCard(dir);}
