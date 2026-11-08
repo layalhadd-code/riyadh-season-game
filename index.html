@@ -71,7 +71,7 @@ button{font-family:inherit}
 .card{position:absolute;inset:0;border-radius:0;overflow:hidden;border:none;
   background:#15131b;display:flex;flex-direction:column;justify-content:flex-end;transition:transform .35s, opacity .35s}
 .card .art{position:absolute;inset:0;display:grid;place-items:center;font-size:92px;filter:saturate(1.1)}
-.card .art.photo{background-size:cover;background-position:top center;filter:none;font-size:0}
+.card img.art{width:100%;height:100%;object-fit:cover;object-position:top center;display:block;filter:none}
 .card .scrim{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.92) 0%,rgba(0,0,0,.78) 13%,rgba(0,0,0,.42) 27%,rgba(0,0,0,0) 50%)}
 .card .cat{position:absolute;top:14px;left:14px;background:rgba(0,0,0,.55);border:1px solid rgba(255,255,255,.18);
   padding:5px 12px;border-radius:999px;font-size:12px;font-weight:600;backdrop-filter:blur(4px)}
@@ -89,7 +89,7 @@ button{font-family:inherit}
 .counts{display:flex;justify-content:center;gap:16px;font-size:12px;color:var(--mut);margin:6px 0 4px}
 .counts b{color:var(--ink)}
 .counts .nl{color:var(--pink2);font-weight:700}
-.swipebtns{display:flex;justify-content:center;gap:16px;margin:2px 0 2px}
+.swipehint{text-align:center;font-size:12px;letter-spacing:.02em;color:var(--mut);margin:2px 0 4px}
 .sb{width:44px;height:44px;border-radius:50%;border:2px solid var(--line);background:var(--panel);
   font-size:18px;cursor:pointer;display:grid;place-items:center;color:#fff}
 .sb.maybe{width:40px;height:40px;border-color:var(--amber);color:var(--amber);align-self:center}
@@ -343,7 +343,7 @@ button{font-family:inherit}
       <div class="body">
         <div class="h1">Winder</div>
         <div class="wtag">webook's outings Tinder · Riyadh Season</div>
-        <div class="lead" style="margin-bottom:8px" id="swipeLead">Drag a card — or tap ✓ ? ✕ below. No limit.</div>
+        <div class="lead" style="margin-bottom:8px" id="swipeLead">Swipe right to like, left to skip, down for maybe.</div>
         <div class="chips" id="catchips"></div>
         <div class="deck" id="deck">
           <div class="empty">
@@ -358,11 +358,7 @@ button{font-family:inherit}
             <span><b id="cNo">0</b> No</span><span><b id="cMaybe">0</b> Maybe</span>
             <span><b id="cYes">0</b> Yes</span>
           </div>
-          <div class="swipebtns">
-            <button class="sb no" onclick="swipe('no')" aria-label="No">✕</button>
-            <button class="sb maybe" onclick="swipe('maybe')" aria-label="Maybe">?</button>
-            <button class="sb yes" onclick="swipe('yes')" aria-label="Yes">✓</button>
-          </div>
+          <div class="swipehint">← Skip &nbsp;·&nbsp; ↓ Maybe &nbsp;·&nbsp; Like →</div>
         </div>
       </div>
       <div class="actionbar"><button class="btn primary" id="swipeNext" disabled onclick="go('free')">Pick 5 you like to continue (0/5)</button></div>
@@ -826,7 +822,7 @@ function buildDeck(){
     var e=EVENTS[order[k]];
     var card=document.createElement('div');card.className='card';card.style.zIndex=10+(order.length-k);card.dataset.eid=e.id;
     var img=IMG[e.id];
-    var art=img?'<div class="art photo" style="background-image:url(\''+img+'\')"></div>':'<div class="art" style="background:'+e.g+'">'+e.emo+'</div>';
+    var art=img?'<img class="art photo" src="'+img+'" alt="" loading="eager" decoding="async">':'<div class="art" style="background:'+e.g+'">'+e.emo+'</div>';
     var meta='<div class="meta"><h2>'+e.t+'</h2><div class="when">'+e.when+'</div><div class="venue">'+e.venue+'</div><div class="pr"><span class="price">'+e.price+'</span><span class="fr">'+e.fr+'</span></div></div>';
     card.innerHTML=art+'<div class="scrim"></div><div class="cat">'+e.cat+'</div>'+flagFor(e)+meta;
     deck.insertBefore(card,deck.firstChild);
@@ -843,7 +839,7 @@ function swipe(dir){doSwipeCard(dir);}
 var drag=null;
 function deckDown(e){var t=topCard();if(!t)return;drag={card:t,x0:e.clientX,y0:e.clientY,dx:0,dy:0};t.style.transition='none';}
 function deckMove(e){if(!drag)return;drag.dx=e.clientX-drag.x0;drag.dy=e.clientY-drag.y0;drag.card.style.transform='translate('+drag.dx+'px,'+drag.dy+'px) rotate('+(drag.dx*0.05)+'deg)';}
-function deckEnd(){if(!drag)return;var dx=drag.dx,dy=drag.dy,c=drag.card;drag=null;if(dx>95){doSwipeCard('yes');}else if(dx<-95){doSwipeCard('no');}else if(dy<-95){doSwipeCard('maybe');}else{c.style.transition='transform .25s ease';c.style.transform='';}}
+function deckEnd(){if(!drag)return;var dx=drag.dx,dy=drag.dy,c=drag.card;drag=null;if(Math.abs(dx)>=Math.abs(dy)){if(dx>90){doSwipeCard('yes');return;}if(dx<-90){doSwipeCard('no');return;}}else if(dy>90){doSwipeCard('maybe');return;}c.style.transition='transform .25s ease';c.style.transform='';}
 
 /* ===== calendar / budget / who ===== */
 var MONTHS=["Nov","Dec","Jan","Feb"],curMonth="Dec";
@@ -1204,7 +1200,7 @@ function confetti(){var w=document.getElementById('confetti');var cs=['#ec1f82',
 (function(){var dk=document.getElementById('deck');dk.addEventListener('pointerdown',deckDown);window.addEventListener('pointermove',deckMove);window.addEventListener('pointerup',deckEnd);window.addEventListener('pointercancel',deckEnd);})();
 /* personalize: each session gets its own order (stand-in for per-user ranking) */
 (function(){for(var i=EVENTS.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=EVENTS[i];EVENTS[i]=EVENTS[j];EVENTS[j]=t;}})();
-document.getElementById('swipeLead').textContent='Picked for you — '+EVENTS.length+' to swipe. Drag a card, or tap ✓ ? ✕. Let\'s see who matches your vibe.';
+document.getElementById('swipeLead').textContent='Picked for you — '+EVENTS.length+' to swipe. Swipe right to like, left to skip, down for maybe. Let\'s see who matches your vibe.';
 renderCats();buildDeck();updateCounts();
 renderMtabs();renderCal();renderWho();
 setName('Omar');renderCircles();
