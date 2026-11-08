@@ -360,7 +360,7 @@ button{font-family:inherit}
           </div>
         </div>
       </div>
-      <div class="actionbar"><button class="btn primary" onclick="go('free')">Next: when are you free?</button></div>
+      <div class="actionbar"><button class="btn primary" id="swipeNext" disabled onclick="go('free')">Pick 5 you like to continue (0/5)</button></div>
     </section>
 
     <!-- 2 AVAILABILITY -->
@@ -383,7 +383,7 @@ button{font-family:inherit}
         <div class="subh">Your budget per outing</div>
         <div class="pills" id="budget">
           <button class="pill" onclick="setBudget(this,'low')">Under 150</button>
-          <button class="pill on" onclick="setBudget(this,'mid')">150–400</button>
+          <button class="pill" onclick="setBudget(this,'mid')">150–400</button>
           <button class="pill" onclick="setBudget(this,'premium')">400+</button>
         </div>
         <div class="subh">Who do you usually go out with?</div>
@@ -828,7 +828,7 @@ function buildDeck(){
   }
   restack();
 }
-function updateCounts(){document.getElementById('cYes').textContent=yes;document.getElementById('cMaybe').textContent=maybe;document.getElementById('cNo').textContent=no;}
+function updateCounts(){document.getElementById('cYes').textContent=yes;document.getElementById('cMaybe').textContent=maybe;document.getElementById('cNo').textContent=no;var nx=document.getElementById('swipeNext');if(nx){if(yes>=5){nx.disabled=false;nx.textContent='Next: when are you free?';}else{nx.disabled=true;nx.textContent='Pick '+(5-yes)+' more you like ('+yes+'/5)';}}}
 function topCard(){var cs=document.getElementById('deck').querySelectorAll('.card');if(!cs.length)return null;var top=cs[0],z=-Infinity;for(var i=0;i<cs.length;i++){var zz=parseInt(cs[i].style.zIndex||'0',10);if(zz>z){z=zz;top=cs[i];}}return top;}
 function restack(){var cs=[].slice.call(document.getElementById('deck').querySelectorAll('.card'));cs.sort(function(a,b){return parseInt(b.style.zIndex||'0',10)-parseInt(a.style.zIndex||'0',10);});cs.forEach(function(c,i){if(drag&&drag.card===c)return;c.style.transition='transform .25s ease';c.style.transform=i===0?'none':'scale('+(1-i*.03)+') translateY('+(i*-8)+'px)';});}
 function doSwipeCard(dir){var deck=document.getElementById('deck');var top=topCard();if(!top)return;top.style.transition='transform .34s ease, opacity .34s ease';if(dir==='yes'){top.style.transform='translate(145%,-30px) rotate(16deg)';yes++;}else if(dir==='no'){top.style.transform='translate(-145%,-30px) rotate(-16deg)';no++;}else{top.style.transform='translateY(135%)';maybe++;}top.style.opacity='0';updateCounts();setTimeout(function(){top.remove();restack();if(!deck.querySelectorAll('.card').length){deck.classList.add('done');updateEmpty();}},330);}
@@ -847,7 +847,7 @@ function renderMtabs(){var w=document.getElementById('mtabs');w.innerHTML='';MON
 function renderCal(){var cal=document.getElementById('cal');cal.innerHTML='';["Su","Mo","Tu","We","Th","Fr","Sa"].forEach(function(d){var e=document.createElement('div');e.className='dow';e.textContent=d;cal.appendChild(e);});var days=curMonth==="Dec"?31:(curMonth==="Nov"?30:31);var start=curMonth==="Dec"?DEC_START:(curMonth==="Nov"?6:(curMonth==="Jan"?4:0));for(var i=0;i<start;i++){var e=document.createElement('div');e.className='day empty';cal.appendChild(e);}for(var d=1;d<=days;d++){var cell=document.createElement('div');cell.className='day';cell.textContent=d;cell.onclick=(function(c){return function(){c.classList.toggle('free');};})(cell);cal.appendChild(cell);}}
 function setBudget(btn,val){[].slice.call(document.querySelectorAll('#budget .pill')).forEach(function(p){p.classList.remove('on');});btn.classList.add('on');USER.budget=val;}
 var WHO=["Concerts & music","Sports & matches","Theater & shows","Dining & outdoors"];
-function renderWho(){var w=document.getElementById('whoWrap');w.innerHTML='';var opts=["Solo","Partner","Kids","Friends"];var pre=[3,3,2,1];WHO.forEach(function(name,idx){var box=document.createElement('div');box.className='who';var h='<div class="n">'+name+'</div><div class="pills">';opts.forEach(function(o,j){h+='<button class="pill'+(j===pre[idx]?' on':'')+'">'+o+'</button>';});box.innerHTML=h+'</div>';w.appendChild(box);[].slice.call(box.querySelectorAll('.pill')).forEach(function(p){p.onclick=function(){[].slice.call(box.querySelectorAll('.pill')).forEach(function(x){x.classList.remove('on');});p.classList.add('on');};});});}
+function renderWho(){var w=document.getElementById('whoWrap');w.innerHTML='';var opts=["Solo","Partner","Kids","Friends"];WHO.forEach(function(name,idx){var box=document.createElement('div');box.className='who';var h='<div class="n">'+name+'</div><div class="pills">';opts.forEach(function(o,j){h+='<button class="pill">'+o+'</button>';});box.innerHTML=h+'</div>';w.appendChild(box);[].slice.call(box.querySelectorAll('.pill')).forEach(function(p){p.onclick=function(){[].slice.call(box.querySelectorAll('.pill')).forEach(function(x){x.classList.remove('on');});p.classList.add('on');};});});}
 
 /* ===== identity ===== */
 function setName(v){USER_NAME=v||"You";document.getElementById('meAv').textContent=initials(USER_NAME);}
@@ -913,10 +913,17 @@ function circleById(id){for(var i=0;i<CIRCLES.length;i++)if(CIRCLES[i].id===id)r
 function circleToMembers(c){var list=[m("You","you",0)];c.members.forEach(function(x){list.push(m(x.nm,"pending",0));});return list;}
 function setOutingCircle(o,id){var c=circleById(id);if(!c)return;o.chosenId=id;o.group=c.nm;o.members=circleToMembers(c);}
 function pickCircle(id){setOutingCircle(curOuting,id);renderOuting();}
-function inviteCircle(){curOuting.members.forEach(function(x){if(x.status==='pending')x.status='invited';});renderOuting();toast('Invited '+curOuting.group+' — webook notification + WhatsApp sent ✓');}
-function rsvp(nm){var mem=curOuting.members.filter(function(x){return x.nm===nm;})[0];if(mem){mem.status='in';renderOuting();toast(nm+' is in ✓');}}
-/* everyone you've invited (you + invited + accepted) — the group you book/send links for. 'pending' = not invited yet, excluded. */
-function goingMembers(){return (curOuting.members||[]).filter(function(x){return x.status!=='pending';});}
+function inviteCircle(){
+  /* send invites, then simulate the friends' own RSVPs coming back (read-only to the organizer) */
+  var others=curOuting.members.filter(function(x){return x.status!=='you';});
+  others.forEach(function(x){x.status='in';});
+  if(others.length>2) others[others.length-1].status='invited';   /* one still deciding */
+  if(others.length>3) others[1].status='reschedule';              /* one suggests another day */
+  renderOuting();
+  toast('Invited '+curOuting.group+' — webook + WhatsApp sent ✓. Waiting on their replies.');
+}
+/* only confirmed attendees count toward booking/pay: the friends who replied "in", plus you */
+function goingMembers(){return (curOuting.members||[]).filter(function(x){return x.status==='in'||x.status==='you';});}
 
 /* ===== timeline ===== */
 function thumbHtml(o,cls){return o.img?'<div class="'+cls+' photo" style="background-image:url(\''+o.img+'\')"></div>':'<div class="'+cls+'" style="background:linear-gradient(135deg,#2a1248,#0c0716)">'+o.emo+'</div>';}
@@ -968,8 +975,9 @@ function memRow(mem,mode){
   var btn,sub='';
   if(mode==='commit'){
     if(mem.status==="you")btn='<span class="st you">In · you</span>';
-    else if(mem.status==="in")btn='<span class="st in">In ✓</span>';
-    else if(mem.status==="invited"){btn='<button class="st nudge" onclick="rsvp(\''+mem.nm+'\')">✓ In</button>';sub='Invited · awaiting reply';}
+    else if(mem.status==="in"){btn='<span class="st in">In ✓</span>';sub='Replied — they’re coming';}
+    else if(mem.status==="reschedule"){btn='<span class="st resch">Reschedule</span>';sub='Suggested another day';}
+    else if(mem.status==="invited"){btn='<button class="st nudge" onclick="toast(\'Nudged '+mem.nm+'\')">Nudge</button>';sub='Invited · awaiting their reply';}
     else {btn='<span class="st pending">Not invited</span>';}
   }else{ /* pay */
     if(mem.paid)btn='<span class="st paid">Paid ✓</span>';
@@ -1011,14 +1019,14 @@ function renderOuting(){
       body.innerHTML=h+'<div class="src" style="color:var(--mut)">Pick a circle to invite to this outing — or create a new one.</div>';
       bar.innerHTML='<button class="btn primary" disabled>Book for the group →</button>';return;
     }
-    var mem=o.members,going=mem.filter(function(x){return x.status!=="pending";}).length,pct=Math.round(going/mem.length*100);
+    var mem=o.members,going=mem.filter(function(x){return x.status==="in"||x.status==="you";}).length,pct=Math.round(going/mem.length*100);
     var link='webook.com/w/'+o.id+'-'+(1000+o.t.length);
     h+='<div class="invite"><div style="font-weight:800;font-size:15px">Invite '+picked.nm+' to join</div>'+
       '<div class="msg">'+USER_NAME+': Let’s do <b>'+o.t+'</b> on '+o.d+'! Tap to join & grab your seat 👇<span class="lnk">'+link+'</span></div>'+
       '<button class="btn wa" onclick="inviteCircle()">🟢 Invite on WhatsApp</button>'+
       '<div class="row2" style="margin-top:8px"><button class="btn ghost" onclick="inviteCircle()">Copy link</button><button class="btn ghost" onclick="inviteCircle()">Share</button></div></div>'+
-      '<div class="proglab"><b>'+going+' of '+mem.length+' in the plan</b><span style="color:var(--mut)">'+picked.nm+'</span></div><div class="prog"><span style="width:'+pct+'%"></span></div>'+
-      '<div class="src" style="color:var(--mut);margin:-2px 0 4px">'+(going>1?'Invited — each confirms by RSVP or by paying their own seat.':'Invite '+picked.nm+' so they can join and pay their seat.')+'</div>'+
+      '<div class="proglab"><b>'+going+' of '+mem.length+' confirmed in</b><span style="color:var(--mut)">'+picked.nm+'</span></div><div class="prog"><span style="width:'+pct+'%"></span></div>'+
+      '<div class="src" style="color:var(--mut);margin:-2px 0 4px">'+(mem.some(function(x){return x.status==="invited";})?'Each person replies on their own phone — in, reschedule or out. Nudge anyone still deciding.':'Invite '+picked.nm+' so they can RSVP on their phones.')+'</div>'+
       mem.map(function(x){return memRow(x,'commit');}).join('');
     h+='<div class="handoff" style="margin-top:12px;background:rgba(59,130,246,.08);border-color:rgba(59,130,246,.3);color:#cfe0ff"><span class="wbk" style="color:#93c5fd">🤝 None of your circle free?</span>Match me with a verified webook member who’s also going to this event and shares your taste.<button class="btn ghost" style="margin-top:9px" onclick="openGoMatch()">Match me with someone going →</button></div>';
     body.innerHTML=h;
@@ -1029,36 +1037,38 @@ function notifyOuting(){notifyState[curOuting.id]=!notifyState[curOuting.id];ren
 
 /* ===== book (mapped) ===== */
 var viaAdded=false;
-function openBook(){viaAdded=false;renderBook();setPay('own');go('book');}
+function openBook(){viaAdded=false;setPay('own');go('book');}
 function renderBook(){
-  var o=curOuting,n=goingMembers().length;
+  var o=curOuting,all=goingMembers().length,n=(payMode==='own'?1:all);
   var cart=document.getElementById('bkCart');
   var addonPP=o.group==="Date Night"?0:30;
   var addonName=o.group==="Date Night"?"":"Boulevard World passes";
   var base=o.price*n;
+  var seatlbl=(payMode==='own'?'1 × SAR '+o.price+' · your seat':n+' × SAR '+o.price);
   var h=''+
-   '<div class="bk">'+thumbHtml(o,'th')+'<div class="c"><h3>'+o.t+'</h3><div class="sub">'+o.d+' · '+o.venue+' · '+n+' × SAR '+o.price+'</div></div><div class="amt">SAR '+base+'</div></div>';
+   '<div class="bk">'+thumbHtml(o,'th')+'<div class="c"><h3>'+o.t+'</h3><div class="sub">'+o.d+' · '+o.venue+' · '+seatlbl+'</div></div><div class="amt">SAR '+base+'</div></div>';
   if(addonName){
     h+='<div class="ailab">AI: make it a full night</div>'+
      '<div class="bk'+(viaAdded?' add':'')+'" id="viaRow"><div class="th" style="background:linear-gradient(135deg,#122a4a,#0a1424)">🌍</div><div class="c"><h3>'+addonName+'</h3><div class="sub">'+n+' × SAR '+addonPP+'</div></div>'+(viaAdded?'<span class="added">SAR '+(addonPP*n)+' · Added</span>':'<button class="addbtn" onclick="toggleVia()">Add</button>')+'</div>';
   }
   cart.innerHTML=h;
 }
-function toggleVia(){viaAdded=!viaAdded;renderBook();setPay(payMode);}
-function cartTotal(){var o=curOuting,n=o.members.length;var addonPP=o.group==="Date Night"?0:30;return o.price*n+(viaAdded?addonPP*n:0);}
+function toggleVia(){viaAdded=!viaAdded;setPay(payMode);}
+function cartTotal(){var o=curOuting,n=goingMembers().length;var addonPP=o.group==="Date Night"?0:30;return o.price*n+(viaAdded?addonPP*n:0);}
 function perPerson(){var o=curOuting;var addonPP=o.group==="Date Night"?0:30;return o.price+(viaAdded?addonPP:0);}
 function setPay(mode){
   payMode=mode;
   document.getElementById('payOwn').classList.toggle('on',mode==='own');
   document.getElementById('payAll').classList.toggle('on',mode==='all');
-  var note=document.getElementById('payNote'),btn=document.getElementById('payBtn');var o=curOuting,n=o.members.length;
+  var note=document.getElementById('payNote'),btn=document.getElementById('payBtn');var o=curOuting,n=goingMembers().length;
   if(mode==='own'){
-    note.innerHTML='<span class="wbk">🔗 webook deep-link · one per person</span>Each of the '+n+' gets their own webook link for <b>'+o.d+'</b> — cart prefilled, they pay <b>SAR '+perPerson()+'</b> for their seat. No one fronts the money, and it needs no new payment build.';
-    btn.textContent='Send everyone their link →';
+    note.innerHTML='<span class="wbk">🔗 webook deep-link · one per person</span>Your cart is just <b>your seat (SAR '+perPerson()+')</b>. The other '+(n-1)+' each get their own webook link for <b>'+o.d+'</b> and pay for their own — no one fronts the money, and it needs no new payment build.';
+    btn.textContent='Pay my seat & send their links →';
   }else{
     note.innerHTML='<span class="wbk">🔗 webook checkout · one cart</span>You open <b>webook</b> with all '+n+' tickets prefilled and pay <b>SAR '+cartTotal()+'</b> in one go. Tickets drop into each person’s wallet.';
     btn.textContent='Continue to webook · SAR '+cartTotal()+' →';
   }
+  renderBook();
 }
 function doBook(){
   if(payMode==='own'){renderPayown();go('payown');}
@@ -1190,7 +1200,7 @@ function confetti(){var w=document.getElementById('confetti');var cs=['#ec1f82',
 /* personalize: each session gets its own order (stand-in for per-user ranking) */
 (function(){for(var i=EVENTS.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=EVENTS[i];EVENTS[i]=EVENTS[j];EVENTS[j]=t;}})();
 document.getElementById('swipeLead').textContent='Picked for you — '+EVENTS.length+' to swipe. Drag a card, or tap ✓ ? ✕.';
-renderCats();buildDeck();
+renderCats();buildDeck();updateCounts();
 renderMtabs();renderCal();renderWho();
 setName('Omar');renderCircles();
 renderTimeline();
