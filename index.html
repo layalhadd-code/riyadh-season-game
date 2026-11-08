@@ -1,6 +1,6 @@
 <meta charset="utf-8">
 <title>Plan Your Winter</title>
-<meta name="description" content="webook's Plan Your Winter — the real Riyadh Season 26-27 game: swipe the catalogue, AI plans your season, resale fallback for sold-out events, stranger matching cross-checked against webook's database, and notify-me for events not yet live.">
+<meta name="description" content="webook's Plan Your Winter — the real Riyadh Season 26-27 game: swipe the catalogue, one winter timeline, invite a group per outing, resale fallback, stranger matching cross-checked against webook's database, and everyone-pays-own with a payment tracker.">
 <style>
 :root{
   --bg:#070708; --panel:#131318; --panel2:#1b1b22; --line:#2a2a33;
@@ -34,6 +34,7 @@ button{font-family:inherit}
 .screen{position:absolute;inset:0;display:none;flex-direction:column;min-height:0}
 .screen.active{display:flex}
 .body{flex:1;overflow-y:auto;padding:4px 16px 12px;-webkit-overflow-scrolling:touch}
+.screen[data-s="swipe"] .body{display:flex;flex-direction:column;overflow:hidden}
 .h1{font-size:25px;font-weight:800;margin:6px 0 2px;line-height:1.05}
 .lead{color:var(--mut);font-size:14px;margin:2px 0 10px;line-height:1.4}
 .actionbar{flex:0 0 auto;padding:10px 16px calc(14px + env(safe-area-inset-bottom,0px));
@@ -43,26 +44,24 @@ button{font-family:inherit}
 .btn.ghost{background:var(--panel);color:#fff;border:1px solid var(--line)}
 .btn.wa{background:#25D366;color:#06270f}
 .btn.resale{background:var(--amber);color:#2b1c00}
-.btn.sm{padding:12px;font-size:14px;border-radius:14px}
+.btn[disabled]{opacity:.5}
 .row2{display:flex;gap:10px}
 .row2 .btn{font-size:14px;padding:13px}
+.backlink{color:var(--mut);font-size:13px;cursor:pointer;display:inline-flex;align-items:center;gap:5px;margin:2px 0 6px}
 
 /* chips */
-.chips{display:flex;gap:8px;overflow-x:auto;padding:2px 0 6px;scrollbar-width:none}
+.chips{display:flex;gap:8px;overflow-x:auto;padding:2px 0 6px;scrollbar-width:none;flex:0 0 auto}
 .chips::-webkit-scrollbar{display:none}
 .chip{flex:0 0 auto;background:var(--panel);border:1px solid var(--line);color:var(--ink);
   border-radius:999px;padding:8px 14px;font-size:13px;cursor:pointer;white-space:nowrap}
 .chip.on{background:var(--pink);border-color:var(--pink);color:#fff}
 
 /* SWIPE */
-.deck{position:relative;height:clamp(300px,44vh,430px);margin:8px 0 2px;touch-action:none}
-.swipebar{flex:0 0 auto;padding:4px 16px 2px;background:#0a0a0c}
+.deck{position:relative;flex:1 1 auto;min-height:240px;margin:8px 0 2px;touch-action:none}
 .card{position:absolute;inset:0;border-radius:22px;overflow:hidden;border:1px solid var(--line);
   background:#15131b;display:flex;flex-direction:column;justify-content:flex-end;transition:transform .35s, opacity .35s}
 .card .art{position:absolute;inset:0;display:grid;place-items:center;font-size:92px;filter:saturate(1.1)}
 .card .art.photo{background-size:cover;background-position:top center;filter:none;font-size:0}
-.itcard .thumb.photo{background-size:cover !important;background-position:center;font-size:0}
-.bk .th.photo{background-size:cover !important;background-position:center;font-size:0}
 .card .scrim{position:absolute;inset:0;background:linear-gradient(0deg,rgba(0,0,0,.92) 8%,rgba(0,0,0,.15) 55%,rgba(0,0,0,.35))}
 .card .cat{position:absolute;top:14px;left:14px;background:rgba(0,0,0,.55);border:1px solid rgba(255,255,255,.18);
   padding:5px 12px;border-radius:999px;font-size:12px;font-weight:600;backdrop-filter:blur(4px)}
@@ -77,9 +76,6 @@ button{font-family:inherit}
 .card .pr{display:flex;justify-content:space-between;align-items:center;margin-top:12px}
 .card .price{color:var(--pink2);font-weight:800;font-size:16px}
 .card .fr{color:var(--mut);font-size:12px;text-align:right;max-width:52%}
-.card.gone-yes{transform:translateX(120%) rotate(12deg);opacity:0}
-.card.gone-no{transform:translateX(-120%) rotate(-12deg);opacity:0}
-.card.gone-maybe{transform:translateY(120%);opacity:0}
 .counts{display:flex;justify-content:center;gap:16px;font-size:13px;color:var(--mut);margin:12px 0 6px}
 .counts b{color:var(--ink)}
 .counts .nl{color:var(--pink2);font-weight:700}
@@ -91,6 +87,7 @@ button{font-family:inherit}
 .deck .empty{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;
   text-align:center;gap:10px;padding:24px;border:1px dashed var(--line);border-radius:22px}
 .deck.done .empty{display:flex}
+.swipebar{flex:0 0 auto;padding:2px 0 2px}
 
 /* CALENDAR */
 .mtabs{display:flex;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:4px;margin:4px 0 12px;gap:2px}
@@ -113,13 +110,13 @@ button{font-family:inherit}
   padding:11px 4px;font-size:13px;cursor:pointer;color:#ddd}
 .pill.on{background:#fff;color:#111;font-weight:700;border-color:#fff}
 
-/* INVITE */
-.hero{height:140px;border-radius:18px;background:
-  linear-gradient(135deg,#3a1555,#7a1046 60%,#b3153f);display:grid;place-items:center;font-size:56px;margin-bottom:12px;position:relative;overflow:hidden}
-.invcard{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:14px}
-.invcard h3{margin:0 0 4px;font-size:18px}
-.invcard p{margin:0;color:var(--mut);font-size:14px}
-.invcard .lnk{color:var(--green);font-size:13px;margin-top:8px;word-break:break-all}
+/* IDENTITY (you) */
+.me{display:flex;align-items:center;gap:13px;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:6px}
+.me .big{width:52px;height:52px;border-radius:50%;background:var(--pink);display:grid;place-items:center;font-size:19px;font-weight:800;color:#fff;flex:0 0 auto}
+.me .c{flex:1;min-width:0}
+.me label{display:block;color:var(--mut);font-size:11px;letter-spacing:.3px;margin-bottom:3px}
+.me input{width:100%;background:#0e0e12;border:1px solid var(--line);border-radius:10px;color:#fff;font-size:17px;font-weight:700;padding:9px 11px}
+.me .src{color:var(--mut2);font-size:11px;margin-top:5px}
 .circle{display:flex;align-items:center;justify-content:space-between;background:var(--panel);
   border:1px solid var(--line);border-radius:14px;padding:13px 14px;margin-bottom:10px}
 .circle .nm{font-weight:700}.circle .sub{color:var(--mut);font-size:12px}
@@ -134,94 +131,86 @@ button{font-family:inherit}
 .hook p{margin:0;font-size:13px;color:#f0c9df;line-height:1.35}
 .hook b{color:var(--pink2)}
 
-/* ITINERARY */
+/* TIMELINE */
+.monthhead{display:flex;align-items:center;gap:10px;margin:16px 2px 10px}
+.monthhead:first-child{margin-top:4px}
+.monthhead .mn{font-size:17px;font-weight:800}
+.monthhead .ln{flex:1;height:1px;background:var(--line)}
+.monthhead .ct{color:var(--mut);font-size:12px}
 .itcard{display:flex;gap:12px;background:var(--panel);border:1px solid var(--line);border-radius:16px;
   padding:10px;margin-bottom:11px;align-items:stretch}
 .itcard.tap{cursor:pointer}
+.itcard.tap:active{border-color:var(--pink)}
 .itcard .thumb{width:70px;flex:0 0 auto;border-radius:12px;display:grid;place-items:center;font-size:28px}
+.itcard .thumb.photo{background-size:cover !important;background-position:center;font-size:0}
 .itcard .c{flex:1;min-width:0}
 .itcard .d{color:var(--pink2);font-weight:700;font-size:13px}
 .itcard h3{margin:2px 0 3px;font-size:16px;line-height:1.1}
 .itcard .why{color:var(--mut);font-size:12.5px;line-height:1.3;margin-bottom:8px}
 .itcard .ft{display:flex;align-items:center;justify-content:space-between;gap:8px}
 .tag{font-size:11px;padding:4px 9px;border-radius:999px;font-weight:700;white-space:nowrap}
-.tag.book{background:rgba(236,31,130,.16);color:var(--pink2)}
-.tag.wait{background:rgba(245,166,35,.16);color:var(--amber)}
+.tag.ready{background:rgba(236,31,130,.16);color:var(--pink2)}
 .tag.resale{background:rgba(245,166,35,.2);color:#ffcf7a}
 .tag.notify{background:rgba(139,92,246,.2);color:#c4b5fd}
 .tag.match{background:rgba(59,130,246,.2);color:#93c5fd}
 .tag.booked{background:rgba(34,197,94,.16);color:#4ade80}
 .circ-lab{font-size:12px;color:#cfc9d8;font-weight:600;white-space:nowrap}
 
-/* COMMIT */
-.summary{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:6px}
+/* OUTING / COMMIT / BOOK shared */
+.summary{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:12px;display:flex;gap:12px;align-items:center}
+.summary .th{width:58px;height:58px;border-radius:12px;flex:0 0 auto;display:grid;place-items:center;font-size:24px;background-size:cover;background-position:center}
 .summary .lab{color:var(--pink2);font-weight:700;font-size:12px}
-.summary h2{margin:3px 0 0;font-size:23px}
+.summary h2{margin:3px 0 0;font-size:21px;line-height:1.05}
+.invite{background:rgba(37,211,102,.07);border:1px solid rgba(37,211,102,.3);border-radius:16px;padding:13px;margin-bottom:14px}
+.invite .msg{background:#0e0e12;border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:12.5px;color:#d7d2de;line-height:1.4;margin:8px 0 10px}
+.invite .msg .lnk{color:var(--green);display:block;margin-top:4px;word-break:break-all}
 .prog{height:10px;background:#17171d;border-radius:6px;overflow:hidden;margin:12px 0 4px}
 .prog>span{display:block;height:100%;background:var(--green);width:50%;transition:width .4s}
 .proglab{display:flex;justify-content:space-between;font-size:13px;margin-bottom:8px}
 .proglab b{font-size:15px}
 .mem{display:flex;align-items:center;gap:12px;padding:11px 2px;border-bottom:1px solid #17171d}
 .mem .nm{flex:1;font-size:15px}
-.st{font-size:13px;font-weight:700;padding:7px 14px;border-radius:999px;border:none;cursor:pointer}
+.mem .nm small{display:block;color:var(--mut);font-size:11.5px}
+.st{font-size:13px;font-weight:700;padding:7px 14px;border-radius:999px;border:none;cursor:pointer;white-space:nowrap}
 .st.in{background:var(--green);color:#06270f}
+.st.paid{background:var(--green);color:#06270f}
 .st.resch{background:var(--amber);color:#2b1c00}
-.st.nudge{background:transparent;border:1.5px solid var(--pink);color:var(--pink2)}
+.st.pending{background:#2a2a33;color:var(--mut)}
+.st.nudge{background:transparent;border:1.5px solid var(--pink);color:var(--pink2);cursor:pointer}
 .st.you{background:#fff;color:#111}
-.aiwarn{background:#241a06;border:1px solid #4a3a12;color:#f3d79a;border-radius:12px;padding:11px 13px;font-size:13px;margin-top:12px;line-height:1.35}
-.aiwarn b{color:#ffd98a}
-
-/* BOOK */
 .bk{display:flex;gap:12px;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:12px;margin-bottom:10px;align-items:center}
-.bk .th{width:62px;height:62px;border-radius:12px;display:grid;place-items:center;font-size:25px;flex:0 0 auto}
+.bk .th{width:62px;height:62px;border-radius:12px;display:grid;place-items:center;font-size:25px;flex:0 0 auto;background-size:cover;background-position:center}
 .bk .c{flex:1;min-width:0}
 .bk h3{margin:0;font-size:16px}
 .bk .sub{color:var(--mut);font-size:12.5px;margin-top:2px}
 .bk .amt{font-weight:800;font-size:17px;white-space:nowrap}
 .ailab{color:#b9a6ff;font-weight:700;font-size:13px;margin:4px 0 8px}
 .bk.add{border-color:var(--pink)}
-.bk.resaleborder{border-color:var(--amber)}
 .addbtn{background:#fff;color:#111;border:none;border-radius:999px;padding:9px 16px;font-weight:700;cursor:pointer;font-size:13px}
 .added{color:#4ade80;font-weight:700;font-size:13px}
 .paytoggle{display:flex;gap:10px;margin:12px 0}
 .paytoggle .pill{padding:14px 4px}
-.tickets{display:flex;align-items:center;gap:10px;background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.25);
-  border-radius:14px;padding:12px;margin-top:4px}
-.tickets .t{color:#4ade80;font-weight:700;font-size:13px}
 .handoff{background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.3);border-radius:14px;padding:12px 13px;font-size:12.5px;color:#cfe0ff;line-height:1.45;margin:4px 0 10px}
 .handoff b{color:#93c5fd}
 .handoff .wbk{display:flex;align-items:center;gap:6px;font-weight:800;color:#fff;margin-bottom:5px;font-size:12.5px}
 
-/* RESALE */
-.rbrand{display:flex;align-items:center;gap:9px;background:linear-gradient(90deg,#2a1c05,#1a1204);
-  border:1px solid #4a3a12;border-radius:14px;padding:12px 13px;margin:2px 0 14px}
-.rbrand .ic{font-size:22px}
-.rbrand .t{font-weight:800;font-size:14px}
-.rbrand .u{color:#ffcf7a;font-size:12px}
-.sob{display:inline-flex;align-items:center;gap:6px;background:rgba(245,166,35,.14);color:#ffcf7a;
-  border:1px solid rgba(245,166,35,.35);border-radius:999px;padding:6px 12px;font-size:12.5px;font-weight:700;margin-bottom:12px}
-.listing{display:flex;align-items:center;gap:12px;background:var(--panel);border:1px solid var(--line);
-  border-radius:14px;padding:12px;margin-bottom:10px}
-.listing .c{flex:1;min-width:0}
-.listing .lseat{font-weight:700;font-size:14px}
-.listing .lwho{color:var(--mut);font-size:12px;margin:3px 0 0}
-.listing .vf{color:#4ade80;font-size:11px;font-weight:700}
-.listing .pr{text-align:right;white-space:nowrap}
-.listing .pr .p{font-weight:800;font-size:15px}
-.listing .pr .f{color:var(--mut);font-size:11px}
-.listing .pr .f.under{color:#4ade80}
-.listing .pr .f.over{color:#ff9a6a}
-.rbuy{background:var(--amber);color:#2b1c00;border:none;border-radius:10px;padding:9px 13px;font-weight:700;font-size:13px;cursor:pointer}
+/* PAY-OWN experience */
+.friendview{background:linear-gradient(180deg,#141018,#0d0b11);border:1px solid var(--line);border-radius:18px;padding:14px;margin:4px 0 14px}
+.friendview .cap{color:var(--mut);font-size:11px;letter-spacing:.3px;text-transform:uppercase;margin-bottom:8px}
+.wabubble{background:#075E54;color:#fff;border-radius:14px;border-bottom-left-radius:4px;padding:11px 13px;font-size:13px;line-height:1.45;max-width:92%}
+.wabubble .snd{color:#9ff0c6;font-weight:700;font-size:12px;margin-bottom:3px}
+.wabubble .lk{display:block;margin-top:8px;background:#0b3b35;border-radius:10px;padding:9px 11px}
+.wabubble .lk b{color:#fff;font-size:13px}
+.wabubble .lk span{display:block;color:#9ff0c6;font-size:11px;margin-top:2px}
+.paybtnmock{display:inline-block;margin-top:9px;background:var(--pink);color:#fff;font-weight:700;font-size:12px;border-radius:999px;padding:8px 14px}
 
-/* MATCH (stranger matching) */
+/* MATCH */
 .mstat{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:12px}
 .mstat h3{margin:0 0 2px;font-size:16px}
 .mstat p{margin:0;color:var(--mut);font-size:13px;line-height:1.35}
 .scan{display:flex;align-items:center;gap:11px;padding:10px 2px;font-size:13.5px;color:var(--mut);border-bottom:1px solid #17171d}
 .scan:last-child{border-bottom:none}
 .scan .ic{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;flex:0 0 auto;background:#17171d;font-size:13px}
-.scan.done .ic{background:rgba(34,197,94,.2);color:#4ade80}
-.scan.done{color:var(--ink)}
 .scan .sub{display:block;color:var(--mut);font-size:11.5px;margin-top:1px}
 .scan .spin{width:15px;height:15px;border-radius:50%;border:2px solid #3a3a44;border-top-color:var(--pink);animation:spin .7s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
@@ -258,8 +247,31 @@ button{font-family:inherit}
   border:1px solid #1e3a5f;border-radius:14px;padding:13px;margin-bottom:12px}
 .conf .big{font-size:30px;font-weight:800;color:#93c5fd}
 .conf .t{font-size:13px;color:#cfe0ff;line-height:1.3}
+.feed{background:rgba(139,92,246,.08);border:1px solid rgba(139,92,246,.3);border-radius:14px;padding:12px 13px;margin-top:6px;font-size:13px;color:#d9ccff;line-height:1.4}
+.feed b{color:#c4b5fd}
 
-/* NOTIFY (not-yet-live) */
+/* RESALE */
+.rbrand{display:flex;align-items:center;gap:9px;background:linear-gradient(90deg,#2a1c05,#1a1204);
+  border:1px solid #4a3a12;border-radius:14px;padding:12px 13px;margin:2px 0 14px}
+.rbrand .ic{font-size:22px}
+.rbrand .t{font-weight:800;font-size:14px}
+.rbrand .u{color:#ffcf7a;font-size:12px}
+.sob{display:inline-flex;align-items:center;gap:6px;background:rgba(245,166,35,.14);color:#ffcf7a;
+  border:1px solid rgba(245,166,35,.35);border-radius:999px;padding:6px 12px;font-size:12.5px;font-weight:700;margin-bottom:12px}
+.listing{display:flex;align-items:center;gap:12px;background:var(--panel);border:1px solid var(--line);
+  border-radius:14px;padding:12px;margin-bottom:10px}
+.listing .c{flex:1;min-width:0}
+.listing .lseat{font-weight:700;font-size:14px}
+.listing .lwho{color:var(--mut);font-size:12px;margin:3px 0 0}
+.listing .vf{color:#4ade80;font-size:11px;font-weight:700}
+.listing .pr{text-align:right;white-space:nowrap}
+.listing .pr .p{font-weight:800;font-size:15px}
+.listing .pr .f{color:var(--mut);font-size:11px}
+.listing .pr .f.under{color:#4ade80}
+.listing .pr .f.over{color:#ff9a6a}
+.rbuy{background:var(--amber);color:#2b1c00;border:none;border-radius:10px;padding:9px 13px;font-weight:700;font-size:13px;cursor:pointer}
+
+/* NOTIFY */
 .ncard{display:flex;gap:12px;background:var(--panel);border:1px solid var(--line);border-radius:16px;
   padding:12px;margin-bottom:10px;align-items:center}
 .ncard.on{border-color:var(--viol);background:rgba(139,92,246,.07)}
@@ -270,19 +282,17 @@ button{font-family:inherit}
 .ncard .sub{color:var(--mut);font-size:12px;margin-top:2px}
 .nbtn{border:1px solid var(--viol);background:transparent;color:#c4b5fd;border-radius:999px;padding:8px 13px;font-weight:700;font-size:12.5px;cursor:pointer;white-space:nowrap}
 .nbtn.on{background:var(--viol);color:#fff;border-color:var(--viol)}
-.feed{background:rgba(139,92,246,.08);border:1px solid rgba(139,92,246,.3);border-radius:14px;padding:12px 13px;margin-top:6px;font-size:13px;color:#d9ccff;line-height:1.4}
-.feed b{color:#c4b5fd}
 
-/* BLIND table result */
-.table{height:180px;border-radius:18px;background:radial-gradient(circle at 50% 40%,#17304f,#0a1322);
+/* BLIND */
+.table{height:170px;border-radius:18px;background:radial-gradient(circle at 50% 40%,#17304f,#0a1322);
   position:relative;margin-bottom:14px;display:grid;place-items:center}
-.table .ring{width:160px;height:110px;border-radius:50%;border:2px solid var(--blue);position:relative;display:grid;place-items:center}
-.table .me{width:32px;height:32px;border-radius:50%;background:var(--blue)}
-.seat{position:absolute;width:24px;height:24px;border-radius:50%}
+.table .ring{width:150px;height:104px;border-radius:50%;border:2px solid var(--blue);position:relative;display:grid;place-items:center}
+.table .me2{width:30px;height:30px;border-radius:50%;background:var(--blue)}
 .safety{display:flex;gap:8px;margin-top:10px}
 .safety .s{flex:1;text-align:center;background:#101826;border:1px solid #1e3a5f;border-radius:12px;padding:12px 6px;font-size:12px;color:#bcd4f5;font-weight:600}
 .badge{display:inline-block;border:1px dashed var(--line);color:var(--mut);border-radius:999px;padding:5px 12px;font-size:12px;margin-bottom:10px}
 .badge.b{border-color:#1e3a5f;color:#93c5fd}
+.badge.g{border-color:rgba(34,197,94,.4);color:#4ade80}
 
 /* toast + menu */
 .toast{position:absolute;left:50%;bottom:92px;transform:translateX(-50%) translateY(20px);opacity:0;
@@ -299,7 +309,6 @@ button{font-family:inherit}
 .confetti{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:30}
 .confetti i{position:absolute;top:-10px;width:9px;height:14px;opacity:.9;animation:fall 1.8s linear forwards}
 @keyframes fall{to{transform:translateY(120vh) rotate(540deg);opacity:0}}
-.backlink{color:var(--mut);font-size:13px;cursor:pointer;display:inline-flex;align-items:center;gap:5px;margin:2px 0 6px}
 </style>
 
 <div class="app" id="app">
@@ -321,19 +330,19 @@ button{font-family:inherit}
           <div class="empty">
             <div style="font-size:40px">🎉</div>
             <div style="font-weight:800;font-size:20px" id="emptyTitle">Your winter's taking shape</div>
-            <div style="color:var(--mut);font-size:14px" id="emptySub">Now tell us when you're free.</div>
+            <div style="color:var(--mut);font-size:14px">Now tell us when you're free.</div>
           </div>
         </div>
-      </div>
-      <div class="swipebar">
-        <div class="counts" id="counts">
-          <span><b id="cYes">0</b> Yes</span><span><b id="cMaybe">0</b> Maybe</span>
-          <span><b id="cNo">0</b> No</span><span class="nl">No limit</span>
-        </div>
-        <div class="swipebtns">
-          <button class="sb no" onclick="swipe('no')" aria-label="No">✕</button>
-          <button class="sb maybe" onclick="swipe('maybe')" aria-label="Maybe">?</button>
-          <button class="sb yes" onclick="swipe('yes')" aria-label="Yes">✓</button>
+        <div class="swipebar">
+          <div class="counts" id="counts">
+            <span><b id="cYes">0</b> Yes</span><span><b id="cMaybe">0</b> Maybe</span>
+            <span><b id="cNo">0</b> No</span><span class="nl">No limit</span>
+          </div>
+          <div class="swipebtns">
+            <button class="sb no" onclick="swipe('no')" aria-label="No">✕</button>
+            <button class="sb maybe" onclick="swipe('maybe')" aria-label="Maybe">?</button>
+            <button class="sb yes" onclick="swipe('yes')" aria-label="Yes">✓</button>
+          </div>
         </div>
       </div>
       <div class="actionbar"><button class="btn primary" onclick="go('free')">Next: when are you free?</button></div>
@@ -363,26 +372,24 @@ button{font-family:inherit}
           <button class="pill on" onclick="setBudget(this,'mid')">150–400</button>
           <button class="pill" onclick="setBudget(this,'premium')">400+</button>
         </div>
-        <div class="subh">Who would you go with?</div>
+        <div class="subh">Who do you usually go out with?</div>
         <div id="whoWrap"></div>
       </div>
-      <div class="actionbar"><button class="btn primary" onclick="go('invite')">Next: invite your circle</button></div>
+      <div class="actionbar"><button class="btn primary" onclick="go('you')">Next: you &amp; your circles</button></div>
     </section>
 
-    <!-- 3 INVITE -->
-    <section class="screen" data-s="invite">
+    <!-- 3 YOU & CIRCLES -->
+    <section class="screen" data-s="you">
       <div class="body">
-        <div class="h1">Bring your circle</div>
-        <div class="hero">🎆</div>
-        <div class="invcard">
-          <h3>Omar is planning winter. You in?</h3>
-          <p>Swipe what you'd go to and mark your free days. AI does the rest.</p>
-          <div class="lnk">webook.com/winter/omar</div>
-        </div>
-        <button class="btn wa" onclick="toast('Opening WhatsApp…')">🟢&nbsp; Send on WhatsApp</button>
-        <div class="row2" style="margin-top:10px">
-          <button class="btn ghost" onclick="toast('Link copied')">Copy link</button>
-          <button class="btn ghost" onclick="toast('Shared to stories')">Share to stories</button>
+        <div class="h1">You &amp; your circles</div>
+        <div class="lead">This is you on webook. Your groups are ready — after AI builds your winter, you'll invite the right group to <b style="color:#fff">each outing</b>.</div>
+        <div class="me">
+          <div class="big" id="meAv">OM</div>
+          <div class="c">
+            <label>YOUR NAME</label>
+            <input id="nameInput" value="Omar" oninput="setName(this.value)" autocomplete="off">
+            <div class="src">🔒 From your webook profile · tap to edit</div>
+          </div>
         </div>
         <div class="subh">Your circles</div>
         <div id="circles"></div>
@@ -391,82 +398,142 @@ button{font-family:inherit}
           <p><b>The taste game stays as the hook.</b> Lama guessed 7 of your 9 picks. She beat the AI — then you both started planning.</p>
         </div>
       </div>
-      <div class="actionbar"><button class="btn primary" onclick="go('itin')">See the winter AI built</button></div>
+      <div class="actionbar"><button class="btn primary" onclick="go('timeline')">See the winter AI built</button></div>
     </section>
 
-    <!-- 4 ITINERARY -->
-    <section class="screen" data-s="itin">
+    <!-- 4 TIMELINE -->
+    <section class="screen" data-s="timeline">
       <div class="body">
         <div class="h1">Your winter is ready</div>
-        <div class="lead">Matched to who's free and who said yes. Tap a plan to act on it.</div>
-        <div class="mtabs" id="itabs"></div>
-        <div id="itList"></div>
+        <div class="lead">Your whole season, Nov–Feb. Tap any plan to invite the group and book.</div>
+        <div id="timelineList"></div>
       </div>
-      <div class="actionbar"><button class="btn primary" onclick="go('commit')">Send to everyone</button></div>
+      <div class="actionbar"><button class="btn primary" onclick="toast('Shared your winter with your circles 🎉')">Share my whole winter</button></div>
     </section>
 
-    <!-- 5 COMMIT -->
-    <section class="screen" data-s="commit">
+    <!-- 5 OUTING (invite + commit, mapped) -->
+    <section class="screen" data-s="outing">
       <div class="body">
+        <div class="backlink" onclick="go('timeline')">‹ Back to your winter</div>
         <div class="summary">
-          <div class="lab">The Boys · Sun 27 Dec · The Venue</div>
-          <h2>Six Kings Slam 🎾</h2>
+          <div class="th" id="oTh">🎾</div>
+          <div><div class="lab" id="oLab">The Boys · Sun 27 Dec</div><h2 id="oTitle">Six Kings Slam</h2></div>
         </div>
-        <div class="proglab" style="margin-top:12px"><b><span id="inCount">3</span> of 6 in</b><span style="color:var(--mut)">4 needed to book</span></div>
-        <div class="prog"><span id="progBar"></span></div>
-        <div id="members"></div>
-        <div class="aiwarn"><b>Turki suggests Mon 28 Dec.</b> AI checked availability: 2 of the group would drop out. Staying on Sunday.</div>
+        <div id="oBody"></div>
       </div>
-      <div class="actionbar"><button class="btn primary" id="bookBtn" onclick="go('book')">Book for the crew →</button></div>
+      <div class="actionbar" id="oBar"></div>
     </section>
 
     <!-- 6 BOOK -->
     <section class="screen" data-s="book">
       <div class="body">
-        <div class="badge">You're the organizer</div>
+        <div class="backlink" onclick="go('outing')">‹ Back</div>
         <div class="h1" style="margin-top:2px">Everyone's in. Time to pay.</div>
         <div class="lead" style="margin:4px 0 2px">The game hands the plan to webook — date, session &amp; tickets prefilled. You just pay.</div>
         <div class="subh" style="margin-top:12px">Your webook cart</div>
-        <div class="bk">
-          <div class="th photo" style="background-image:url('six-kings.jpg')"></div>
-          <div class="c"><h3>Six Kings Slam</h3><div class="sub">Sun 27 Dec · The Venue · 4 × SAR 200</div></div>
-          <div class="amt">SAR 800</div>
-        </div>
-        <div class="ailab">AI: make it a full night</div>
-        <div class="bk add">
-          <div class="th photo" style="background-image:url('blvd-world.jpg')"></div>
-          <div class="c"><h3>Boulevard World passes</h3><div class="sub">4 × SAR 30</div></div>
-          <span class="added">SAR 120 · Added</span>
-        </div>
-        <div class="bk" id="viaRow">
-          <div class="th photo" style="background-image:url('groves.jpg')"></div>
-          <div class="c"><h3>Table for 4 at The Groves</h3><div class="sub">Reserve 8 PM · pay at venue</div></div>
-          <button class="addbtn" id="viaBtn" onclick="toggleVia()">Add</button>
-        </div>
+        <div id="bkCart"></div>
         <div class="subh">How do you want to pay?</div>
         <div class="paytoggle">
           <button class="pill on" id="payOwn" onclick="setPay('own')">Everyone pays own</button>
           <button class="pill" id="payAll" onclick="setPay('all')">I'll pay for all</button>
         </div>
         <div class="handoff" id="payNote"></div>
-        <div class="tickets">
-          <div class="avs">
-            <span class="av" style="background:#ff6ba8">OM</span><span class="av" style="background:#5aa9ff">FS</span>
-            <span class="av" style="background:#ffd166">KH</span><span class="av" style="background:#6ee7b7">MJ</span>
-          </div>
-          <div class="t">E-tickets land in each webook wallet</div>
-        </div>
       </div>
-      <div class="actionbar"><button class="btn primary" id="payBtn" onclick="doBook()">Book on webook · SAR 920</button></div>
+      <div class="actionbar"><button class="btn primary" id="payBtn" onclick="doBook()">Send everyone their link →</button></div>
     </section>
 
-    <!-- 7 RESALE -->
+    <!-- 7 PAY-OWN experience -->
+    <section class="screen" data-s="payown">
+      <div class="body">
+        <div class="backlink" onclick="go('book')">‹ Back</div>
+        <div class="badge g">✓ Links sent</div>
+        <div class="h1" style="margin-top:2px" id="poTitle">Each person pays for their seat</div>
+        <div class="lead" id="poLead">Everyone in the group gets their own webook link. No one fronts the money.</div>
+        <div class="friendview">
+          <div class="cap">What each friend receives</div>
+          <div class="wabubble">
+            <div class="snd" id="poSender">Omar</div>
+            <span id="poMsg">Join us for Six Kings Slam on Sun 27 Dec! Grab your seat 👇</span>
+            <span class="lk"><b id="poLink">webook.com/w/sixkings-a8f3</b><span id="poPrice">Your seat · SAR 200</span></span>
+            <span class="paybtnmock">Pay on webook →</span>
+          </div>
+        </div>
+        <div class="subh">Who got a link</div>
+        <div id="poMembers"></div>
+      </div>
+      <div class="actionbar"><button class="btn primary" onclick="go('tracker')">Track who's paid →</button></div>
+    </section>
+
+    <!-- 8 TRACKER -->
+    <section class="screen" data-s="tracker">
+      <div class="body">
+        <div class="backlink" onclick="go('timeline')">‹ Back to your winter</div>
+        <div class="h1" style="margin-top:2px" id="trTitle">Six Kings Slam — who's paid</div>
+        <div class="lead" id="trLead">Each person's e-ticket drops into their webook wallet the moment they pay.</div>
+        <div class="proglab" style="margin-top:10px"><b><span id="trCount">1</span> of <span id="trTotal">4</span> paid</b><span style="color:var(--mut)" id="trLeft">3 still to pay</span></div>
+        <div class="prog"><span id="trBar"></span></div>
+        <div id="trMembers"></div>
+      </div>
+      <div class="actionbar"><button class="btn primary" id="trBtn" onclick="nudgeAll()">Nudge everyone pending</button></div>
+    </section>
+
+    <!-- 9 MATCH -->
+    <section class="screen" data-s="match">
+      <div class="body">
+        <div class="backlink" onclick="go('timeline')">‹ Back to your winter</div>
+        <div class="badge b">AI matching · opt-in</div>
+        <div class="h1" style="margin-top:2px">Sat 23 Jan — your crew's busy</div>
+        <div class="lead">You said yes to a tarab night. AI can seat you with people who genuinely share your taste — cross-checked against webook's database, not just the game.</div>
+        <div class="mstat" id="matchScan">
+          <h3>Finding people like you</h3>
+          <p>Scanning verified webook profiles for real overlap.</p>
+          <div style="margin-top:8px" id="scanRows"></div>
+        </div>
+        <div id="matchResult" hidden>
+          <div class="conf">
+            <div class="big" id="confNum">—</div>
+            <div class="t"><b>Match confidence.</b> How closely this table's real history lines up with yours.</div>
+          </div>
+          <div class="subh" style="margin-top:4px">Why we trust this — two sources</div>
+          <div class="xcheck">
+            <div class="xcol game"><h4>🎮 THE GAME SAYS</h4><div class="v">High-energy vibe · 150–400 budget · loves concerts, sports &amp; dining.</div></div>
+            <div class="xcol db"><h4>🗄️ THE DATABASE CONFIRMS</h4><div class="v">Booked Six Kings Slam &amp; Saber Rebaï before · profile interest layers: live music, tennis.</div></div>
+          </div>
+          <div class="subh">Your blind table of 6</div>
+          <div id="candList"></div>
+          <div class="feed" id="matchFeed"><b>How the score is built:</b> shared bookings 35% · interest layers 30% · game vibe &amp; outings 20% · budget 15%.</div>
+        </div>
+      </div>
+      <div class="actionbar"><button class="btn primary" id="matchBtn" disabled onclick="go('blind')">Save my seat</button></div>
+    </section>
+
+    <!-- 10 BLIND -->
+    <section class="screen" data-s="blind">
+      <div class="body">
+        <div class="badge b">Seat saved</div>
+        <div class="table"><div class="ring"><div class="me2"></div></div></div>
+        <div class="h1">You're at the table</div>
+        <div class="lead">Sat 23 Jan, 8 PM · tarab night at The Groves. 5 verified people who share your taste. Names stay hidden until the night.</div>
+        <div class="subh" style="color:#93c5fd">What this table has in common with you</div>
+        <div class="chips">
+          <span class="chip on">Live music</span><span class="chip on">Six Kings Slam</span>
+          <span class="chip on">Dining out</span><span class="chip on">Mid budget</span>
+        </div>
+        <div class="safety"><div class="s">Women-only option</div><div class="s">Verified accounts</div><div class="s">Public venue</div></div>
+      </div>
+      <div class="actionbar">
+        <button class="btn primary" onclick="toast('Added to your winter — see you there 🎉')">Add to my winter</button>
+        <button class="btn ghost" style="margin-top:10px" onclick="go('timeline')">Back to my winter</button>
+      </div>
+    </section>
+
+    <!-- 11 RESALE -->
     <section class="screen" data-s="resale">
       <div class="body">
-        <div class="backlink" onclick="go('itin')">‹ Back to your winter</div>
+        <div class="backlink" onclick="go('outing')">‹ Back</div>
         <div class="sob">⚠️ Sold out on webook</div>
-        <div class="h1" id="rTitle" style="margin-top:2px">WWE Crown Jewel</div>
-        <div class="lead" id="rSub">Fri 20 Nov · Kingdom Arena · Sold out at face value.</div>
+        <div class="h1" id="rTitle" style="margin-top:2px">Six Kings Slam</div>
+        <div class="lead" id="rSub">Sold out at face value.</div>
         <div class="rbrand">
           <div class="ic">🔁</div>
           <div><div class="t">We found tickets on resale</div><div class="u">resell.webook.com · verified fan-to-fan</div></div>
@@ -476,86 +543,19 @@ button{font-family:inherit}
           Every resale ticket is a <b style="color:#ffcf7a">re-issued webook e-ticket</b> — same barcode, transferred to your name. You never leave the app, and the sale stays on-platform.
         </div>
       </div>
-      <div class="actionbar"><button class="btn resale" onclick="toast('Resale ticket secured — re-issued to your phone ✓')">Buy on resale · SAR 420</button></div>
+      <div class="actionbar"><button class="btn resale" onclick="toast('Resale ticket secured — re-issued to your phone ✓')">Buy on resale</button></div>
     </section>
 
-    <!-- 8 MATCH (stranger matching) -->
-    <section class="screen" data-s="match">
-      <div class="body">
-        <div class="backlink" onclick="go('itin')">‹ Back to your winter</div>
-        <div class="badge b">AI matching · opt-in</div>
-        <div class="h1" style="margin-top:2px">Sat 23 Jan — your crew's busy</div>
-        <div class="lead">You said yes to a tarab night. AI can seat you with people who genuinely share your taste — cross-checked against webook's database, not just the game.</div>
-
-        <div class="mstat" id="matchScan">
-          <h3>Finding people like you</h3>
-          <p>Scanning verified webook profiles for real overlap.</p>
-          <div style="margin-top:8px" id="scanRows"></div>
-        </div>
-
-        <div id="matchResult" hidden>
-          <div class="conf">
-            <div class="big" id="confNum">—</div>
-            <div class="t"><b>Match confidence.</b> How closely this table's real history lines up with yours.</div>
-          </div>
-
-          <div class="subh" style="margin-top:4px">Why we trust this — two sources</div>
-          <div class="xcheck">
-            <div class="xcol game">
-              <h4>🎮 THE GAME SAYS</h4>
-              <div class="v">High-energy vibe · 150–400 budget · loves concerts, sports & dining.</div>
-            </div>
-            <div class="xcol db">
-              <h4>🗄️ THE DATABASE CONFIRMS</h4>
-              <div class="v">Booked Six Kings Slam & Saber Rebaï before · profile interest layers: live music, tennis.</div>
-            </div>
-          </div>
-
-          <div class="subh">Your blind table of 6</div>
-          <div id="candList"></div>
-
-          <div class="feed" id="matchFeed">
-            <b>How the score is built:</b> shared bookings 35% · profile interest layers 30% · game vibe &amp; outings 20% · budget band 15%.
-          </div>
-        </div>
-      </div>
-      <div class="actionbar"><button class="btn primary" id="matchBtn" disabled style="opacity:.5" onclick="go('blind')">Save my seat</button></div>
-    </section>
-
-    <!-- 9 BLIND result -->
-    <section class="screen" data-s="blind">
-      <div class="body">
-        <div class="badge b">Seat saved</div>
-        <div class="table"><div class="ring"><div class="me"></div></div></div>
-        <div class="h1">You're at the table</div>
-        <div class="lead">Sat 23 Jan, 8 PM · tarab night at The Groves. 5 verified people who share your taste. Names stay hidden until the night.</div>
-        <div class="subh" style="color:#93c5fd">What this table has in common with you</div>
-        <div class="chips">
-          <span class="chip on">Live music</span><span class="chip on">Six Kings Slam</span>
-          <span class="chip on">Dining out</span><span class="chip on">Mid budget</span>
-        </div>
-        <div class="safety">
-          <div class="s">Women-only option</div><div class="s">Verified accounts</div><div class="s">Public venue</div>
-        </div>
-      </div>
-      <div class="actionbar">
-        <button class="btn primary" onclick="toast('Added to your winter — see you there 🎉')">Add to my winter</button>
-        <button class="btn ghost" style="margin-top:10px" onclick="go('swipe')">Start again</button>
-      </div>
-    </section>
-
-    <!-- 10 NOTIFY (not-yet-live) -->
+    <!-- 12 NOTIFY -->
     <section class="screen" data-s="notify">
       <div class="body">
-        <div class="backlink" onclick="go('itin')">‹ Back to your winter</div>
+        <div class="backlink" onclick="go('timeline')">‹ Back to your winter</div>
         <div class="h1">Not announced yet</div>
         <div class="lead">We're planning your whole winter — including the big nights that haven't dropped. Register interest and you'll be first in when tickets go live.</div>
         <div id="notifyList"></div>
-        <div class="feed" id="notifyFeed">
-          <b id="notifyCount">0</b> events on your watch-list. The moment any goes live, you get a push + a 24-hour early-access window before public sale.
-        </div>
+        <div class="feed"><b id="notifyCount">0</b> events on your watch-list. The moment any goes live, you get a push + a 24-hour early-access window before public sale.</div>
       </div>
-      <div class="actionbar"><button class="btn primary" onclick="go('itin')">Done — back to my winter</button></div>
+      <div class="actionbar"><button class="btn primary" onclick="go('timeline')">Done — back to my winter</button></div>
     </section>
 
   </div>
@@ -563,107 +563,86 @@ button{font-family:inherit}
   <div class="toast" id="toast"></div>
   <div class="confetti" id="confetti"></div>
 
-  <!-- menu -->
   <div class="sheet" id="sheet" onclick="if(event.target.id==='sheet')closeMenu()">
     <div class="inner">
       <h4>Plan</h4>
       <a onclick="go('swipe')"><span>1 · Swipe the catalogue</span><span class="n">plan</span></a>
       <a onclick="go('free')"><span>2 · When are you free?</span><span class="n">plan</span></a>
-      <a onclick="go('invite')"><span>3 · Bring your circle</span><span class="n">plan</span></a>
-      <a onclick="go('itin')"><span>4 · Your winter is ready</span><span class="n">plan</span></a>
-      <h4>Book</h4>
-      <a onclick="go('commit')"><span>5 · Group commitment</span><span class="n">friend</span></a>
-      <a onclick="go('book')"><span>6 · Organizer booking</span><span class="n">organizer</span></a>
-      <h4>The three new systems</h4>
-      <a onclick="go('resale')"><span>🔁 Sold out → resale</span><span class="n">resell.webook.com</span></a>
-      <a onclick="openMatch()"><span>🧭 Match me with strangers</span><span class="n">DB cross-check</span></a>
-      <a onclick="go('notify')"><span>🔔 Notify me — not live yet</span><span class="n">plan ahead</span></a>
+      <a onclick="go('you')"><span>3 · You &amp; your circles</span><span class="n">plan</span></a>
+      <a onclick="go('timeline')"><span>4 · Your winter (timeline)</span><span class="n">plan</span></a>
+      <h4>Try an outing</h4>
+      <a onclick="openOutingById('six')"><span>🎾 Sold out → resale</span><span class="n">Six Kings</span></a>
+      <a onclick="openOutingById('toy')"><span>🎭 Invite · pay · track</span><span class="n">The Toy Shop</span></a>
+      <a onclick="openOutingById('tarab')"><span>🧭 Match me with strangers</span><span class="n">tarab night</span></a>
+      <a onclick="openOutingById('nye')"><span>🔔 Notify me — not live yet</span><span class="n">NYE</span></a>
     </div>
   </div>
 </div>
 
 <script>
-/* ============ REAL RIYADH SEASON 26-27 CATALOGUE ============ */
-/* id, title, cat, when, venue, price, emoji, gradient, demand, friends, interest-layers */
+/* ===== swipe catalogue (real Riyadh Season 26-27) ===== */
 var EVENTS=[
- {id:"six-kings",t:"Six Kings Slam",cat:"Sports",when:"27, 28 & 30 Dec",venue:"The Venue",price:"From SAR 200",emo:"🎾",g:"linear-gradient(135deg,#2a1248,#0c0716)",demand:"sold",fr:"3 friends said yes",layers:["tennis","sports"]},
- {id:"crown-jewel",t:"WWE Crown Jewel",cat:"Sports",when:"20 Nov",venue:"Kingdom Arena",price:"From SAR 180",emo:"🤼",g:"linear-gradient(135deg,#4a0f1e,#140608)",demand:"sold",fr:"5 friends said yes",layers:["combat-sports","sports"]},
- {id:"ufc",t:"UFC Riyadh",cat:"Sports",when:"Dec",venue:"Kingdom Arena",price:"From SAR 250",emo:"🥋",g:"linear-gradient(135deg,#3a1012,#140607)",demand:"hot",fr:"4 friends said yes",layers:["combat-sports","sports"]},
- {id:"canelo",t:"Mexico vs The World",cat:"Sports",when:"31 Oct",venue:"ANB Arena",price:"From SAR 300",emo:"🥊",g:"linear-gradient(135deg,#2a1a08,#120a04)",demand:"sold",fr:"Canelo vs Mbilli",layers:["combat-sports","sports"]},
- {id:"afc",t:"AFC Asian Cup 2027",cat:"Sports",when:"7 Jan",venue:"King Fahd Sports City",price:"From SAR 120",emo:"⚽",g:"linear-gradient(135deg,#113a2e,#08140f)",demand:"hot",fr:"5 friends said yes",layers:["football","sports"]},
- {id:"blvd-world",t:"Boulevard World",cat:"Zones",when:"From 30 Oct",venue:"20+ country zones",price:"From SAR 30",emo:"🌍",g:"linear-gradient(135deg,#122a4a,#0a1424)",demand:"ok",fr:"6 friends said yes",layers:["food","culture","family"]},
- {id:"wonder",t:"Wonder Garden",cat:"Zones",when:"From Nov",venue:"Boulevard City",price:"From SAR 50",emo:"🌸",g:"linear-gradient(135deg,#3a1540,#130815)",demand:"ok",fr:"4 friends said yes",layers:["family","rides"]},
- {id:"toy-shop",t:"The Toy Shop",cat:"Shows",when:"Nov",venue:"Global Theater, BLVD City",price:"From SAR 80",emo:"🎭",g:"linear-gradient(135deg,#3a1555,#140a20)",demand:"ok",fr:"Family said yes",layers:["theater","family"]},
- {id:"al-ommda",t:"Al Ommda",cat:"Shows",when:"Dec",venue:"BLVD City Theater",price:"From SAR 90",emo:"😂",g:"linear-gradient(135deg,#2a1248,#0c0716)",demand:"ok",fr:"2 friends said yes",layers:["theater","comedy"]},
- {id:"groves",t:"The Groves · 5 Years",cat:"Dining",when:"From Nov",venue:"Themed restaurants",price:"Pay at venue",emo:"🍽️",g:"linear-gradient(135deg,#113a2e,#0a1f18)",demand:"ok",fr:"Work crew said yes",layers:["food","dining"]},
- {id:"ethnosport",t:"Ethnosport Festival",cat:"Culture",when:"Nov",venue:"Heritage grounds",price:"From SAR 60",emo:"🏇",g:"linear-gradient(135deg,#3a2a10,#140f06)",demand:"ok",fr:"3 friends said yes",layers:["culture","heritage"]},
- {id:"via",t:"VIA Riyadh · Film & Dinner",cat:"Zones",when:"All season",venue:"VOX + fine dining",price:"From SAR 120",emo:"🎬",g:"linear-gradient(135deg,#231233,#0c0716)",demand:"ok",fr:"Date night",layers:["dining","cinema","premium"]},
- {id:"farmers",t:"Farmers Market",cat:"Dining",when:"From Dec",venue:"Farm-to-table",price:"From SAR 40",emo:"🥐",g:"linear-gradient(135deg,#4a3312,#160f06)",demand:"ok",fr:"3 friends said yes",layers:["food","family"]},
- {id:"formula-e",t:"Formula E Karting",cat:"Experiences",when:"All season",venue:"SEVEN AlHamra",price:"From SAR 110",emo:"🏎️",g:"linear-gradient(135deg,#102a3a,#0a1620)",demand:"ok",fr:"The Boys said yes",layers:["rides","adrenaline"]},
- /* not-yet-live — notify */
- {id:"abu-bakr",t:"Abu Bakr Salem Stage",cat:"Concerts",when:"Headliner TBA",venue:"BLVD City",price:"Coming soon",emo:"🎤",g:"linear-gradient(135deg,#4a0f2e,#140610)",demand:"soon",fr:"Lineup drops soon",layers:["live-music","concerts"]},
- {id:"nye",t:"New Year's Eve concert",cat:"Concerts",when:"31 Dec · TBA",venue:"To be announced",price:"Coming soon",emo:"🎆",g:"linear-gradient(135deg,#1c1240,#0a0716)",demand:"soon",fr:"Always sells fast",layers:["live-music","concerts"]}
+ {id:"six-kings",t:"Six Kings Slam",cat:"Sports",when:"27, 28 & 30 Dec",venue:"The Venue",price:"From SAR 200",emo:"🎾",g:"linear-gradient(135deg,#2a1248,#0c0716)",demand:"sold",fr:"3 friends said yes"},
+ {id:"crown-jewel",t:"WWE Crown Jewel",cat:"Sports",when:"20 Nov",venue:"Kingdom Arena",price:"From SAR 180",emo:"🤼",g:"linear-gradient(135deg,#4a0f1e,#140608)",demand:"sold",fr:"5 friends said yes"},
+ {id:"ufc",t:"UFC Riyadh",cat:"Sports",when:"Dec",venue:"Kingdom Arena",price:"From SAR 250",emo:"🥋",g:"linear-gradient(135deg,#3a1012,#140607)",demand:"hot",fr:"4 friends said yes"},
+ {id:"canelo",t:"Mexico vs The World",cat:"Sports",when:"31 Oct",venue:"ANB Arena",price:"From SAR 300",emo:"🥊",g:"linear-gradient(135deg,#2a1a08,#120a04)",demand:"sold",fr:"Canelo vs Mbilli"},
+ {id:"afc",t:"AFC Asian Cup 2027",cat:"Sports",when:"7 Jan",venue:"King Fahd Sports City",price:"From SAR 120",emo:"⚽",g:"linear-gradient(135deg,#113a2e,#08140f)",demand:"hot",fr:"5 friends said yes"},
+ {id:"blvd-world",t:"Boulevard World",cat:"Zones",when:"From 30 Oct",venue:"20+ country zones",price:"From SAR 30",emo:"🌍",g:"linear-gradient(135deg,#122a4a,#0a1424)",demand:"ok",fr:"6 friends said yes"},
+ {id:"wonder",t:"Wonder Garden",cat:"Zones",when:"From Nov",venue:"Boulevard City",price:"From SAR 50",emo:"🌸",g:"linear-gradient(135deg,#3a1540,#130815)",demand:"ok",fr:"4 friends said yes"},
+ {id:"toy-shop",t:"The Toy Shop",cat:"Shows",when:"Nov",venue:"Global Theater, BLVD City",price:"From SAR 80",emo:"🎭",g:"linear-gradient(135deg,#3a1555,#140a20)",demand:"ok",fr:"Family said yes"},
+ {id:"al-ommda",t:"Al Ommda",cat:"Shows",when:"Dec",venue:"BLVD City Theater",price:"From SAR 90",emo:"😂",g:"linear-gradient(135deg,#2a1248,#0c0716)",demand:"ok",fr:"2 friends said yes"},
+ {id:"groves",t:"The Groves · 5 Years",cat:"Dining",when:"From Nov",venue:"Themed restaurants",price:"Pay at venue",emo:"🍽️",g:"linear-gradient(135deg,#113a2e,#0a1f18)",demand:"ok",fr:"Work crew said yes"},
+ {id:"ethnosport",t:"Ethnosport Festival",cat:"Culture",when:"Nov",venue:"Heritage grounds",price:"From SAR 60",emo:"🏇",g:"linear-gradient(135deg,#3a2a10,#140f06)",demand:"ok",fr:"3 friends said yes"},
+ {id:"via",t:"VIA Riyadh · Film & Dinner",cat:"Zones",when:"All season",venue:"VOX + fine dining",price:"From SAR 120",emo:"🎬",g:"linear-gradient(135deg,#231233,#0c0716)",demand:"ok",fr:"Date night"},
+ {id:"farmers",t:"Farmers Market",cat:"Dining",when:"From Dec",venue:"Farm-to-table",price:"From SAR 40",emo:"🥐",g:"linear-gradient(135deg,#4a3312,#160f06)",demand:"ok",fr:"3 friends said yes"},
+ {id:"formula-e",t:"Formula E Karting",cat:"Experiences",when:"All season",venue:"SEVEN AlHamra",price:"From SAR 110",emo:"🏎️",g:"linear-gradient(135deg,#102a3a,#0a1620)",demand:"ok",fr:"The Boys said yes"},
+ {id:"abu-bakr",t:"Abu Bakr Salem Stage",cat:"Concerts",when:"Headliner TBA",venue:"BLVD City",price:"Coming soon",emo:"🎤",g:"linear-gradient(135deg,#4a0f2e,#140610)",demand:"soon",fr:"Lineup drops soon"},
+ {id:"nye",t:"New Year's Eve concert",cat:"Concerts",when:"31 Dec · TBA",venue:"To be announced",price:"Coming soon",emo:"🎆",g:"linear-gradient(135deg,#1c1240,#0a0716)",demand:"soon",fr:"Always sells fast"}
 ];
-/* real Riyadh Season key art, rendered from the official 26-27 booklet */
-var IMG={
- "six-kings":"six-kings.jpg","crown-jewel":"crown-jewel.jpg","ufc":"ufc.jpg",
- "canelo":"canelo.jpg","blvd-world":"blvd-world.jpg","wonder":"wonder.jpg",
- "toy-shop":"toy-shop.jpg","al-ommda":"al-ommda.jpg","groves":"groves.jpg",
- "ethnosport":"ethnosport.jpg","via":"via.jpg","farmers":"farmers.jpg",
- "formula-e":"formula-e.jpg","abu-bakr":"abu-bakr.jpg"
-};
+var IMG={"six-kings":"six-kings.jpg","crown-jewel":"crown-jewel.jpg","ufc":"ufc.jpg","canelo":"canelo.jpg","blvd-world":"blvd-world.jpg","wonder":"wonder.jpg","toy-shop":"toy-shop.jpg","al-ommda":"al-ommda.jpg","groves":"groves.jpg","ethnosport":"ethnosport.jpg","via":"via.jpg","farmers":"farmers.jpg","formula-e":"formula-e.jpg","abu-bakr":"abu-bakr.jpg"};
 var CATS=["All","Sports","Concerts","Zones","Shows","Dining","Culture","Experiences"];
+
+/* ===== identity ===== */
+var USER_NAME="Omar";
+function initials(n){n=(n||"").trim();if(!n)return "ME";var p=n.split(/\s+/);return (p.length>1?(p[0][0]+p[1][0]):n.slice(0,2)).toUpperCase();}
+var COLORS={Faisal:"#5aa9ff",Khalid:"#ffd166",Majed:"#6ee7b7",Turki:"#c4a7ff",Ziyad:"#ff9ecb",Dana:"#c4a7ff",Reem:"#ffd166",Hind:"#5aa9ff",Lama:"#6ee7b7",Noura:"#c4a7ff",Sara:"#8be0ff",Partner:"#ff9ecb"};
+function m(nm,status,paid){return {nm:nm,status:status,paid:!!paid,c:nm==="You"?"#ff6ba8":(COLORS[nm]||"#8be0ff")};}
+function ini(nm){return nm==="You"?initials(USER_NAME):nm.slice(0,2).toUpperCase();}
+
 var CIRCLES=[
- {nm:"The Boys",sub:"5 of 6 joined",av:[["OM","#ff6ba8"],["FS","#5aa9ff"],["KH","#ffd166"],["MJ","#6ee7b7"]],more:true},
- {nm:"Family",sub:"All 4 joined",av:[["OM","#ff6ba8"],["DN","#c4a7ff"],["RM","#ffd166"],["HD","#5aa9ff"]]},
- {nm:"Uni Friends",sub:"3 of 7 joined",av:[["OM","#ff6ba8"],["LM","#6ee7b7"],["NR","#c4a7ff"]],more:true}
+ {nm:"The Boys",sub:"6 members",names:["Faisal","Khalid","Majed","Turki"],more:true},
+ {nm:"Family",sub:"4 members",names:["Dana","Reem","Hind"]},
+ {nm:"Uni Friends",sub:"7 members",names:["Lama","Noura","Sara"],more:true},
+ {nm:"Date Night",sub:"2 members",names:["Partner"]}
 ];
-var WHO=["Six Kings Slam","Wonder Garden","AFC Asian Cup"];
 
-/* itinerary by month — demonstrates all states incl. resale / notify / match */
-var ITINS={
- Nov:[
-  {d:"Fri 20 Nov",t:"WWE Crown Jewel",why:"5 friends in. Sold out at face — resale found.",emo:"🤼",g:"linear-gradient(135deg,#4a0f1e,#140608)",circ:"The Boys",tag:["resale","Sold out · resale"],act:"resale",ev:"crown-jewel",img:"crown-jewel.jpg"},
-  {d:"Sat 28 Nov",t:"Boulevard World opening",why:"Season's open. All 4 of you are free.",emo:"🌍",g:"linear-gradient(135deg,#122a4a,#0a1424)",circ:"Family",tag:["booked","Booked"],img:"blvd-world.jpg"}
- ],
- Dec:[
-  {d:"Fri 4 Dec",t:"The Toy Shop",why:"The kids said yes. All 4 free.",emo:"🎭",g:"linear-gradient(135deg,#3a1555,#140a20)",circ:"Family",tag:["book","Ready to book"],act:"commit",img:"toy-shop.jpg"},
-  {d:"Sat 12 Dec",t:"Al Ommda + Farmers Market",why:"5 of 7 free. Comedy night, then food.",emo:"😂",g:"linear-gradient(135deg,#2a1248,#0c0716)",circ:"Uni Friends",tag:["wait","Waiting on friends"],img:"al-ommda.jpg"},
-  {d:"Sun 27 Dec",t:"Six Kings Slam",why:"Omar's busy Thu–Sat, so Sunday. Sold out — resale.",emo:"🎾",g:"linear-gradient(135deg,#2a1248,#0c0716)",circ:"The Boys",tag:["resale","Sold out · resale"],act:"resale",ev:"six-kings",img:"six-kings.jpg"},
-  {d:"Thu 31 Dec",t:"New Year's Eve concert",why:"Not announced yet. We'll alert you first.",emo:"🎆",g:"linear-gradient(135deg,#1c1240,#0a0716)",circ:"Everyone",tag:["notify","Notify me"],act:"notify"}
- ],
- Jan:[
-  {d:"Thu 7 Jan",t:"AFC Asian Cup opener",why:"All 6 in. Booked early before it sells out.",emo:"⚽",g:"linear-gradient(135deg,#113a2e,#08140f)",circ:"The Boys",tag:["booked","Booked"]},
-  {d:"Fri 15 Jan",t:"VIA Riyadh · film & dinner",why:"Date night. VOX + Gymkhana booked.",emo:"🎬",g:"linear-gradient(135deg,#231233,#0c0716)",circ:"Date Night",tag:["book","Ready to book"],act:"commit",img:"via.jpg"},
-  {d:"Sat 23 Jan",t:"Tarab night — join a table",why:"Friends busy. Match with 5 who share your taste.",emo:"🪑",g:"linear-gradient(135deg,#17304f,#0a1322)",circ:"New People",tag:["match","Match me"],act:"match"}
- ],
- Feb:[
-  {d:"Fri 5 Feb",t:"AFC Asian Cup Final",why:"The last big weekend. Register interest now.",emo:"🏆",g:"linear-gradient(135deg,#113a2e,#08140f)",circ:"The Boys",tag:["notify","Notify me"],act:"notify"},
-  {d:"Fri 12 Feb",t:"Ethnosport closing",why:"Heritage night with the family. All 4 free.",emo:"🏇",g:"linear-gradient(135deg,#3a2a10,#140f06)",circ:"Family",tag:["book","Ready to book"],act:"commit",img:"ethnosport.jpg"}
- ]
-};
-var MEMBERS=[
- {in:"OM",nm:"You",c:"#ff6ba8",st:"you"},
- {in:"FS",nm:"Faisal",c:"#5aa9ff",st:"in"},
- {in:"KH",nm:"Khalid",c:"#ffd166",st:"in"},
- {in:"MJ",nm:"Majed",c:"#6ee7b7",st:"in"},
- {in:"TK",nm:"Turki",c:"#c4a7ff",st:"resch"},
- {in:"ZY",nm:"Ziyad",c:"#ff6ba8",st:"nudge"}
+/* ===== the winter timeline (each outing carries its own group + members) ===== */
+var OUTINGS=[
+ {id:"blvd-open",mon:"Nov",d:"Sat 28 Nov",t:"Boulevard World opening",venue:"Boulevard World",emo:"🌍",img:"blvd-world.jpg",price:30,group:"Family",state:"booked",why:"Season's open. All 4 of you are free.",
+   members:[m("You","you",1),m("Dana","in",1),m("Reem","in",1),m("Hind","in",1)]},
+ {id:"crown",mon:"Nov",d:"Fri 20 Nov",t:"WWE Crown Jewel",venue:"Kingdom Arena",emo:"🤼",img:"crown-jewel.jpg",price:180,group:"The Boys",state:"sold",ev:"crown-jewel",why:"5 of the group want in. Sold out at face — resale found.",
+   members:[m("You","you"),m("Faisal","in"),m("Khalid","in"),m("Majed","in"),m("Turki","pending"),m("Ziyad","pending")]},
+ {id:"toy",mon:"Dec",d:"Fri 4 Dec",t:"The Toy Shop",venue:"Global Theater, BLVD City",emo:"🎭",img:"toy-shop.jpg",price:80,group:"Family",state:"ready",why:"The kids said yes. All 4 free.",
+   members:[m("You","you",1),m("Dana","in",1),m("Reem","in"),m("Hind","pending")]},
+ {id:"ommda",mon:"Dec",d:"Sat 12 Dec",t:"Al Ommda + Farmers Market",venue:"BLVD City Theater",emo:"😂",img:"al-ommda.jpg",price:90,group:"Uni Friends",state:"ready",why:"Comedy night, then food. 5 of 7 free.",
+   members:[m("You","you",1),m("Lama","in"),m("Noura","pending"),m("Sara","pending")]},
+ {id:"six",mon:"Dec",d:"Sun 27 Dec",t:"Six Kings Slam",venue:"The Venue",emo:"🎾",img:"six-kings.jpg",price:200,group:"The Boys",state:"sold",ev:"six-kings",why:"Omar's busy Thu–Sat, so Sunday. Sold out — resale.",
+   members:[m("You","you"),m("Faisal","in"),m("Khalid","in"),m("Majed","in"),m("Turki","pending"),m("Ziyad","pending")]},
+ {id:"nye",mon:"Dec",d:"Thu 31 Dec",t:"New Year's Eve concert",venue:"To be announced",emo:"🎆",img:null,price:0,group:"Everyone",state:"notify",why:"Not announced yet. We'll alert you first."},
+ {id:"afc",mon:"Jan",d:"Thu 7 Jan",t:"AFC Asian Cup opener",venue:"King Fahd Sports City",emo:"⚽",img:null,price:120,group:"The Boys",state:"booked",why:"All 6 in. Booked early before it sold out.",
+   members:[m("You","you",1),m("Faisal","in",1),m("Khalid","in",1),m("Majed","in",1),m("Turki","in",1),m("Ziyad","in",1)]},
+ {id:"via",mon:"Jan",d:"Fri 15 Jan",t:"VIA Riyadh · film & dinner",venue:"VOX + Gymkhana",emo:"🎬",img:"via.jpg",price:120,group:"Date Night",state:"ready",why:"Date night. Just the two of you.",
+   members:[m("You","you",1),m("Partner","in",1)]},
+ {id:"tarab",mon:"Jan",d:"Sat 23 Jan",t:"Tarab night — join a table",venue:"The Groves",emo:"🪑",img:null,price:150,group:"New people",state:"match",why:"Friends busy. Match with people who share your taste."},
+ {id:"afc-final",mon:"Feb",d:"Fri 5 Feb",t:"AFC Asian Cup Final",venue:"King Fahd Sports City",emo:"🏆",img:null,price:0,group:"The Boys",state:"notify",why:"The last big weekend. Register interest now."},
+ {id:"ethno",mon:"Feb",d:"Fri 12 Feb",t:"Ethnosport closing",venue:"Heritage grounds",emo:"🏇",img:"ethnosport.jpg",price:60,group:"Family",state:"ready",why:"Heritage night with the family. All 4 free.",
+   members:[m("You","you",1),m("Dana","pending"),m("Reem","in"),m("Hind","pending")]}
 ];
-var DEC_FREE=[3,4,5,10,11,12,18,19,27,31];
-var DEC_BUSY=[24,25,26];
-var DEC_START=2;
+function outing(id){for(var i=0;i<OUTINGS.length;i++)if(OUTINGS[i].id===id)return OUTINGS[i];return null;}
+var curOuting=null, payMode='own';
 
-/* ============ THE USER (built from their game + profile) ============ */
-var USER={
- picks:["six-kings","crown-jewel","afc","groves","via"],   /* yes-swipes + past webook bookings */
- booked:["six-kings","via"],                               /* real order history on webook */
- layers:["live-music","tennis","dining","sports","culture"],/* profile interest layers */
- vibe:"high-energy", budget:"mid",
- outings:["concerts","sports","dining"]
-};
-
-/* ============ THE DATABASE (other verified webook users) ============ */
+/* ===== matching (unchanged logic) ===== */
+var USER={picks:["six-kings","crown-jewel","afc","groves","via"],booked:["six-kings","via"],layers:["live-music","tennis","dining","sports","culture"],vibe:"high-energy",budget:"mid",outings:["concerts","sports","dining"]};
 var POOL=[
  {id:"u1",in:"RS",nm:"R.",c:"#5aa9ff",gender:"m",booked:["six-kings","via","afc"],layers:["tennis","dining","live-music"],vibe:"high-energy",budget:"mid",outings:["sports","dining"]},
  {id:"u2",in:"HN",nm:"H.",c:"#6ee7b7",gender:"f",booked:["six-kings","groves"],layers:["live-music","dining","culture"],vibe:"high-energy",budget:"mid",outings:["concerts","dining"]},
@@ -674,55 +653,39 @@ var POOL=[
  {id:"u7",in:"KD",nm:"K.",c:"#f5a623",gender:"m",booked:["formula-e"],layers:["adrenaline","rides"],vibe:"high-energy",budget:"low",outings:["experiences"]},
  {id:"u8",in:"NF",nm:"N.",c:"#b9a6ff",gender:"f",booked:["groves","via","six-kings"],layers:["dining","live-music","tennis"],vibe:"high-energy",budget:"mid",outings:["dining","concerts","sports"]}
 ];
-
-/* ============ MATCHING LOGIC (real scoring, cross-checked vs DB) ============ */
-function jacc(a,b){var s=new Set(a);var inter=b.filter(function(x){return s.has(x);}).length;
-  var uni=new Set(a.concat(b)).size||1;return inter/uni;}
+function jacc(a,b){var s=new Set(a);var inter=b.filter(function(x){return s.has(x);}).length;var uni=new Set(a.concat(b)).size||1;return inter/uni;}
 function overlapCount(a,b){var s=new Set(a);return b.filter(function(x){return s.has(x);}).length;}
 function scoreCandidate(c){
-  /* 1. shared bookings — the hardest signal: they actually paid for the same events */
-  var book=Math.round(jacc(USER.booked.concat(USER.picks), c.booked)*100);
-  /* 2. profile interest layers overlap */
-  var inter=Math.round(jacc(USER.layers, c.layers)*100);
-  /* 3. game vibe + outings */
-  var vibe=(c.vibe===USER.vibe?60:15)+Math.min(40, overlapCount(USER.outings,c.outings)*18);
-  vibe=Math.min(100,vibe);
-  /* 4. budget band */
+  var book=Math.round(jacc(USER.booked.concat(USER.picks),c.booked)*100);
+  var inter=Math.round(jacc(USER.layers,c.layers)*100);
+  var vibe=Math.min(100,(c.vibe===USER.vibe?60:15)+Math.min(40,overlapCount(USER.outings,c.outings)*18));
   var bud=c.budget===USER.budget?100:(Math.abs(["low","mid","premium"].indexOf(c.budget)-["low","mid","premium"].indexOf(USER.budget))===1?55:20);
   var overall=Math.round(.35*book+.30*inter+.20*vibe+.15*bud);
-  /* signals the user can read */
-  var sharedEv=c.booked.filter(function(x){return USER.booked.concat(USER.picks).indexOf(x)>=0;})
-     .map(function(x){var e=EVENTS.filter(function(ev){return ev.id===x;})[0];return e?e.t:x;});
+  var sharedEv=c.booked.filter(function(x){return USER.booked.concat(USER.picks).indexOf(x)>=0;}).map(function(x){var e=EVENTS.filter(function(ev){return ev.id===x;})[0];return e?e.t:x;});
   var sharedLayers=c.layers.filter(function(x){return USER.layers.indexOf(x)>=0;});
   return {c:c,overall:overall,book:book,inter:inter,vibe:vibe,bud:bud,sharedEv:sharedEv,sharedLayers:sharedLayers};
 }
-function runMatch(){
-  var scored=POOL.map(scoreCandidate).sort(function(a,b){return b.overall-a.overall;});
-  /* seat the 5 strongest genuine overlaps (floor 50 drops no-overlap profiles) */
-  var table=scored.filter(function(s){return s.overall>=50;}).slice(0,5);
-  var dropped=scored.filter(function(s){return s.overall>=50;}).slice(5);
-  return {table:table, dropped:dropped,
-    conf: Math.round(table.reduce(function(a,s){return a+s.overall;},0)/(table.length||1))};
-}
+function runMatch(){var scored=POOL.map(scoreCandidate).sort(function(a,b){return b.overall-a.overall;});var table=scored.filter(function(s){return s.overall>=50;}).slice(0,5);var dropped=scored.filter(function(s){return s.overall>=50;}).slice(5);return {table:table,dropped:dropped,conf:Math.round(table.reduce(function(a,s){return a+s.overall;},0)/(table.length||1))};}
 
-/* ---------- state ---------- */
-var deckIdx=0, filter="All", order=[], yes=0,maybe=0,no=0;
-var inCount=3, viaAdded=false, notifyState={}, matchRun=false;
+/* ===== RESALE ===== */
+var RESALE={
+ "six-kings":{t:"Six Kings Slam",sub:"Sun 27 Dec · The Venue · sold out at face value.",face:200,list:[["Lower bowl · Row F","Verified fan",420,"over"],["Cat 2 · Row M","Verified fan",190,"under"],["Courtside pair","Verified fan · 2 together",640,"over"]]},
+ "crown-jewel":{t:"WWE Crown Jewel",sub:"Fri 20 Nov · Kingdom Arena · sold out at face value.",face:180,list:[["Floor · Block B","Verified fan",420,"over"],["Tier 1 · Row C","Verified fan",160,"under"],["Ringside","Verified fan · 2 together",880,"over"]]}
+};
 
-/* ---------- swipe ---------- */
-function renderCats(){
-  var w=document.getElementById('catchips'); w.innerHTML='';
-  CATS.forEach(function(c){
-    var b=document.createElement('button'); b.className='chip'+(c===filter?' on':''); b.textContent=c;
-    b.onclick=function(){filter=c; renderCats(); buildDeck();}; w.appendChild(b);
-  });
-}
-function flagFor(e){
-  if(e.demand==="sold")return '<div class="flag sold">Sold out · resale</div>';
-  if(e.demand==="hot")return '<div class="flag hot">🔥 Selling fast</div>';
-  if(e.demand==="soon")return '<div class="flag soon">Not live yet</div>';
-  return '';
-}
+/* ===== NOTIFY ===== */
+var NOTIFY=[
+ {id:"abu-bakr",t:"Abu Bakr Salem Stage",sub:"Concert series · headliner lineup TBA",emo:"🎤",g:"linear-gradient(135deg,#4a0f2e,#140610)"},
+ {id:"nye",t:"New Year's Eve concert",sub:"31 Dec · artist to be announced",emo:"🎆",g:"linear-gradient(135deg,#1c1240,#0a0716)"},
+ {id:"afc-final",t:"AFC Asian Cup — knockouts",sub:"Feb · match dates not released",emo:"🏆",g:"linear-gradient(135deg,#113a2e,#08140f)"},
+ {id:"comedy",t:"Winter comedy headliner",sub:"BLVD City Theater · surprise act",emo:"🎙️",g:"linear-gradient(135deg,#2a1248,#0c0716)"}
+];
+var notifyState={};
+
+/* ===== swipe ===== */
+var deckIdx=0,filter="All",order=[],yes=0,maybe=0,no=0;
+function renderCats(){var w=document.getElementById('catchips');w.innerHTML='';CATS.forEach(function(c){var b=document.createElement('button');b.className='chip'+(c===filter?' on':'');b.textContent=c;b.onclick=function(){filter=c;renderCats();buildDeck();};w.appendChild(b);});}
+function flagFor(e){if(e.demand==="sold")return '<div class="flag sold">Sold out · resale</div>';if(e.demand==="hot")return '<div class="flag hot">🔥 Selling fast</div>';if(e.demand==="soon")return '<div class="flag soon">Not live yet</div>';return '';}
 function buildDeck(){
   var deck=document.getElementById('deck');
   [].slice.call(deck.querySelectorAll('.card')).forEach(function(c){c.remove();});
@@ -731,366 +694,243 @@ function buildDeck(){
   deckIdx=0;
   for(var k=order.length-1;k>=0;k--){
     var e=EVENTS[order[k]];
-    var card=document.createElement('div'); card.className='card';
-    card.style.zIndex=10+(order.length-k);
-    if(k>deckIdx){card.style.transform='scale('+(1-(k-deckIdx)*.03)+') translateY('+((k-deckIdx)*-8)+'px)';}
+    var card=document.createElement('div');card.className='card';card.style.zIndex=10+(order.length-k);
     var img=IMG[e.id];
-    var art=img?'<div class="art photo" style="background-image:url(\''+img+'\')"></div>'
-               :'<div class="art" style="background:'+e.g+'">'+e.emo+'</div>';
-    var meta='<div class="meta"><h2>'+e.t+'</h2><div class="when">'+e.when+'</div><div class="venue">'+e.venue+'</div>'+
-             '<div class="pr"><span class="price">'+e.price+'</span><span class="fr">'+e.fr+'</span></div></div>';
+    var art=img?'<div class="art photo" style="background-image:url(\''+img+'\')"></div>':'<div class="art" style="background:'+e.g+'">'+e.emo+'</div>';
+    var meta='<div class="meta"><h2>'+e.t+'</h2><div class="when">'+e.when+'</div><div class="venue">'+e.venue+'</div><div class="pr"><span class="price">'+e.price+'</span><span class="fr">'+e.fr+'</span></div></div>';
     card.innerHTML=art+'<div class="scrim"></div><div class="cat">'+e.cat+'</div>'+flagFor(e)+meta;
     deck.insertBefore(card,deck.firstChild);
   }
   restack();
 }
-function updateCounts(){
-  document.getElementById('cYes').textContent=yes;
-  document.getElementById('cMaybe').textContent=maybe;
-  document.getElementById('cNo').textContent=no;
-}
-function topCard(){
-  var cs=document.getElementById('deck').querySelectorAll('.card');
-  if(!cs.length)return null;
-  var top=cs[0],z=-Infinity;
-  for(var i=0;i<cs.length;i++){var zz=parseInt(cs[i].style.zIndex||'0',10);if(zz>z){z=zz;top=cs[i];}}
-  return top;
-}
-function restack(){
-  var cs=[].slice.call(document.getElementById('deck').querySelectorAll('.card'));
-  cs.sort(function(a,b){return parseInt(b.style.zIndex||'0',10)-parseInt(a.style.zIndex||'0',10);});
-  cs.forEach(function(c,i){
-    if(drag&&drag.card===c)return;
-    c.style.transition='transform .25s ease';
-    c.style.transform=i===0?'none':'scale('+(1-i*.03)+') translateY('+(i*-8)+'px)';
-  });
-}
-function doSwipeCard(dir){
-  var deck=document.getElementById('deck'); var top=topCard(); if(!top)return;
-  top.style.transition='transform .34s ease, opacity .34s ease';
-  if(dir==='yes'){top.style.transform='translate(145%,-30px) rotate(16deg)';yes++;}
-  else if(dir==='no'){top.style.transform='translate(-145%,-30px) rotate(-16deg)';no++;}
-  else{top.style.transform='translateY(135%)';maybe++;}
-  top.style.opacity='0'; updateCounts();
-  setTimeout(function(){ top.remove(); restack();
-    if(!deck.querySelectorAll('.card').length){deck.classList.add('done');
-      document.getElementById('emptyTitle').textContent=yes+' things you’re into';}
-  },330);
-}
-function swipe(dir){ doSwipeCard(dir); }
-/* drag-to-swipe (pointer events cover mouse + touch) */
+function updateCounts(){document.getElementById('cYes').textContent=yes;document.getElementById('cMaybe').textContent=maybe;document.getElementById('cNo').textContent=no;}
+function topCard(){var cs=document.getElementById('deck').querySelectorAll('.card');if(!cs.length)return null;var top=cs[0],z=-Infinity;for(var i=0;i<cs.length;i++){var zz=parseInt(cs[i].style.zIndex||'0',10);if(zz>z){z=zz;top=cs[i];}}return top;}
+function restack(){var cs=[].slice.call(document.getElementById('deck').querySelectorAll('.card'));cs.sort(function(a,b){return parseInt(b.style.zIndex||'0',10)-parseInt(a.style.zIndex||'0',10);});cs.forEach(function(c,i){if(drag&&drag.card===c)return;c.style.transition='transform .25s ease';c.style.transform=i===0?'none':'scale('+(1-i*.03)+') translateY('+(i*-8)+'px)';});}
+function doSwipeCard(dir){var deck=document.getElementById('deck');var top=topCard();if(!top)return;top.style.transition='transform .34s ease, opacity .34s ease';if(dir==='yes'){top.style.transform='translate(145%,-30px) rotate(16deg)';yes++;}else if(dir==='no'){top.style.transform='translate(-145%,-30px) rotate(-16deg)';no++;}else{top.style.transform='translateY(135%)';maybe++;}top.style.opacity='0';updateCounts();setTimeout(function(){top.remove();restack();if(!deck.querySelectorAll('.card').length){deck.classList.add('done');document.getElementById('emptyTitle').textContent=yes+' things you’re into';}},330);}
+function swipe(dir){doSwipeCard(dir);}
 var drag=null;
-function deckDown(e){
-  var t=topCard(); if(!t)return;
-  drag={card:t,x0:e.clientX,y0:e.clientY,dx:0,dy:0};
-  t.style.transition='none';
-}
-function deckMove(e){
-  if(!drag)return;
-  drag.dx=e.clientX-drag.x0; drag.dy=e.clientY-drag.y0;
-  drag.card.style.transform='translate('+drag.dx+'px,'+drag.dy+'px) rotate('+(drag.dx*0.05)+'deg)';
-}
-function deckEnd(){
-  if(!drag)return;
-  var dx=drag.dx,dy=drag.dy,c=drag.card; drag=null;
-  if(dx>95){doSwipeCard('yes');}
-  else if(dx<-95){doSwipeCard('no');}
-  else if(dy<-95){doSwipeCard('maybe');}
-  else{ c.style.transition='transform .25s ease'; c.style.transform=''; }
-}
+function deckDown(e){var t=topCard();if(!t)return;drag={card:t,x0:e.clientX,y0:e.clientY,dx:0,dy:0};t.style.transition='none';}
+function deckMove(e){if(!drag)return;drag.dx=e.clientX-drag.x0;drag.dy=e.clientY-drag.y0;drag.card.style.transform='translate('+drag.dx+'px,'+drag.dy+'px) rotate('+(drag.dx*0.05)+'deg)';}
+function deckEnd(){if(!drag)return;var dx=drag.dx,dy=drag.dy,c=drag.card;drag=null;if(dx>95){doSwipeCard('yes');}else if(dx<-95){doSwipeCard('no');}else if(dy<-95){doSwipeCard('maybe');}else{c.style.transition='transform .25s ease';c.style.transform='';}}
 
-/* ---------- calendar ---------- */
-var MONTHS=["Nov","Dec","Jan","Feb"]; var curMonth="Dec";
-function renderMtabs(){
-  var w=document.getElementById('mtabs'); w.innerHTML='';
-  MONTHS.forEach(function(m){
-    var b=document.createElement('div'); b.className='mtab'+(m===curMonth?' on':''); b.textContent=m;
-    b.onclick=function(){curMonth=m; renderMtabs(); renderCal();}; w.appendChild(b);
-  });
-}
-function renderCal(){
-  var cal=document.getElementById('cal'); cal.innerHTML='';
-  ["Su","Mo","Tu","We","Th","Fr","Sa"].forEach(function(d){var e=document.createElement('div');e.className='dow';e.textContent=d;cal.appendChild(e);});
-  var days = curMonth==="Dec"?31:(curMonth==="Nov"?30:31);
-  var start = curMonth==="Dec"?DEC_START:(curMonth==="Nov"?6:(curMonth==="Jan"?4:0));
-  for(var i=0;i<start;i++){var e=document.createElement('div');e.className='day empty';cal.appendChild(e);}
-  for(var d=1;d<=days;d++){
-    var cell=document.createElement('div'); cell.className='day'; cell.textContent=d;
-    if(curMonth==="Dec"){
-      if(DEC_FREE.indexOf(d)>=0)cell.className='day free';
-      else if(DEC_BUSY.indexOf(d)>=0)cell.className='day busy';
-    }
-    cell.onclick=(function(c){return function(){ if(c.classList.contains('busy')){c.className='day';}
-      else if(c.classList.contains('free')){c.className='day busy';} else {c.className='day free';} };})(cell);
-    cal.appendChild(cell);
-  }
-}
-function setBudget(btn,val){
-  [].slice.call(document.querySelectorAll('#budget .pill')).forEach(function(p){p.classList.remove('on');});
-  btn.classList.add('on'); USER.budget=val;
-}
-function renderWho(){
-  var w=document.getElementById('whoWrap'); w.innerHTML='';
-  var opts=["Solo","Partner","Kids","Friends"]; var pre=[3,2,1];
-  WHO.forEach(function(name,idx){
-    var box=document.createElement('div'); box.className='who';
-    var h='<div class="n">'+name+'</div><div class="pills">';
-    opts.forEach(function(o,j){ h+='<button class="pill'+(j===pre[idx]?' on':'')+'">'+o+'</button>'; });
-    box.innerHTML=h+'</div>'; w.appendChild(box);
-    [].slice.call(box.querySelectorAll('.pill')).forEach(function(p){
-      p.onclick=function(){[].slice.call(box.querySelectorAll('.pill')).forEach(function(x){x.classList.remove('on');});p.classList.add('on');};
+/* ===== calendar / budget / who ===== */
+var MONTHS=["Nov","Dec","Jan","Feb"],curMonth="Dec";
+var DEC_FREE=[3,4,5,10,11,12,18,19,27,31],DEC_BUSY=[24,25,26],DEC_START=2;
+function renderMtabs(){var w=document.getElementById('mtabs');w.innerHTML='';MONTHS.forEach(function(mo){var b=document.createElement('div');b.className='mtab'+(mo===curMonth?' on':'');b.textContent=mo;b.onclick=function(){curMonth=mo;renderMtabs();renderCal();};w.appendChild(b);});}
+function renderCal(){var cal=document.getElementById('cal');cal.innerHTML='';["Su","Mo","Tu","We","Th","Fr","Sa"].forEach(function(d){var e=document.createElement('div');e.className='dow';e.textContent=d;cal.appendChild(e);});var days=curMonth==="Dec"?31:(curMonth==="Nov"?30:31);var start=curMonth==="Dec"?DEC_START:(curMonth==="Nov"?6:(curMonth==="Jan"?4:0));for(var i=0;i<start;i++){var e=document.createElement('div');e.className='day empty';cal.appendChild(e);}for(var d=1;d<=days;d++){var cell=document.createElement('div');cell.className='day';cell.textContent=d;if(curMonth==="Dec"){if(DEC_FREE.indexOf(d)>=0)cell.className='day free';else if(DEC_BUSY.indexOf(d)>=0)cell.className='day busy';}cell.onclick=(function(c){return function(){if(c.classList.contains('busy')){c.className='day';}else if(c.classList.contains('free')){c.className='day busy';}else{c.className='day free';}};})(cell);cal.appendChild(cell);}}
+function setBudget(btn,val){[].slice.call(document.querySelectorAll('#budget .pill')).forEach(function(p){p.classList.remove('on');});btn.classList.add('on');USER.budget=val;}
+var WHO=["Concerts & music","Sports & matches","Theater & shows","Dining & outdoors"];
+function renderWho(){var w=document.getElementById('whoWrap');w.innerHTML='';var opts=["Solo","Partner","Kids","Friends"];var pre=[3,3,2,1];WHO.forEach(function(name,idx){var box=document.createElement('div');box.className='who';var h='<div class="n">'+name+'</div><div class="pills">';opts.forEach(function(o,j){h+='<button class="pill'+(j===pre[idx]?' on':'')+'">'+o+'</button>';});box.innerHTML=h+'</div>';w.appendChild(box);[].slice.call(box.querySelectorAll('.pill')).forEach(function(p){p.onclick=function(){[].slice.call(box.querySelectorAll('.pill')).forEach(function(x){x.classList.remove('on');});p.classList.add('on');};});});}
+
+/* ===== identity ===== */
+function setName(v){USER_NAME=v||"You";document.getElementById('meAv').textContent=initials(USER_NAME);}
+function renderCircles(){var w=document.getElementById('circles');w.innerHTML='';CIRCLES.forEach(function(c){var avs='<span class="av" style="background:#ff6ba8">'+initials(USER_NAME)+'</span>'+c.names.map(function(n){return '<span class="av" style="background:'+(COLORS[n]||'#8be0ff')+'">'+n.slice(0,2).toUpperCase()+'</span>';}).join('');if(c.more)avs+='<span class="av more">+</span>';var el=document.createElement('div');el.className='circle';el.innerHTML='<div><div class="nm">'+c.nm+'</div><div class="sub">'+c.sub+'</div></div><div class="avs">'+avs+'</div>';w.appendChild(el);});}
+
+/* ===== timeline ===== */
+function thumbHtml(o,cls){return o.img?'<div class="'+cls+' photo" style="background-image:url(\''+o.img+'\')"></div>':'<div class="'+cls+'" style="background:linear-gradient(135deg,#2a1248,#0c0716)">'+o.emo+'</div>';}
+var TAGS={ready:["ready","Ready to book"],sold:["resale","Sold out · resale"],notify:["notify","Notify me"],match:["match","Match me"],booked:["booked","Booked"]};
+function renderTimeline(){
+  var w=document.getElementById('timelineList');w.innerHTML='';
+  MONTHS.forEach(function(mo){
+    var items=OUTINGS.filter(function(o){return o.mon===mo;});if(!items.length)return;
+    var head=document.createElement('div');head.className='monthhead';head.innerHTML='<span class="mn">'+mo+'</span><span class="ln"></span><span class="ct">'+items.length+' plan'+(items.length>1?'s':'')+'</span>';w.appendChild(head);
+    items.forEach(function(o){
+      var tg=TAGS[o.state]||["ready","Plan"];
+      var el=document.createElement('div');el.className='itcard tap';
+      el.innerHTML=thumbHtml(o,'thumb')+'<div class="c"><div class="d">'+o.d+'</div><h3>'+o.t+'</h3><div class="why">'+o.why+'</div><div class="ft"><span class="tag '+tg[0]+'">'+tg[1]+'</span><span class="circ-lab">'+o.group+'</span></div></div>';
+      el.onclick=function(){openOuting(o);};w.appendChild(el);
     });
   });
 }
 
-/* ---------- invite ---------- */
-function renderCircles(){
-  var w=document.getElementById('circles'); w.innerHTML='';
-  CIRCLES.forEach(function(c){
-    var avs=c.av.map(function(a){return '<span class="av" style="background:'+a[1]+'">'+a[0]+'</span>';}).join('');
-    if(c.more)avs+='<span class="av more">+</span>';
-    var el=document.createElement('div'); el.className='circle';
-    el.innerHTML='<div><div class="nm">'+c.nm+'</div><div class="sub">'+c.sub+'</div></div><div class="avs">'+avs+'</div>';
-    w.appendChild(el);
-  });
+/* ===== outing (invite + commit, mapped) ===== */
+function openOuting(o){curOuting=o;renderOuting();go('outing');}
+function openOutingById(id){var o=outing(id);if(o)openOuting(o);}
+function memRow(mem,mode){
+  var btn;
+  if(mode==='commit'){
+    if(mem.status==="you")btn='<span class="st you">In · you</span>';
+    else if(mem.status==="in")btn='<span class="st in">In ✓</span>';
+    else btn='<button class="st nudge" onclick="toast(\'Nudged '+mem.nm+'\')">Nudge</button>';
+  }else{ /* pay */
+    if(mem.paid)btn='<span class="st paid">Paid ✓</span>';
+    else btn='<button class="st nudge" onclick="remind(\''+mem.nm+'\')">Remind</button>';
+  }
+  var sub=mode==='pay'?(mem.paid?'E-ticket in webook wallet':(mem.status==="you"?'':'Link sent · awaiting payment')):'';
+  return '<div class="mem"><span class="av" style="background:'+mem.c+'">'+ini(mem.nm)+'</span><span class="nm">'+(mem.nm==="You"?USER_NAME+" (you)":mem.nm)+(sub?'<small>'+sub+'</small>':'')+'</span>'+btn+'</div>';
 }
+function renderOuting(){
+  var o=curOuting;
+  document.getElementById('oTh').outerHTML='<div class="th" id="oTh">'+o.emo+'</div>';
+  var th=document.getElementById('oTh');
+  if(o.img){th.className='th photo';th.style.backgroundImage="url('"+o.img+"')";th.textContent='';}
+  document.getElementById('oLab').textContent=o.group+' · '+o.d+' · '+o.venue;
+  document.getElementById('oTitle').textContent=o.t;
+  var body=document.getElementById('oBody'),bar=document.getElementById('oBar');
+  if(o.state==='booked'){
+    body.innerHTML='<div class="badge g">✓ Booked — tickets in everyone’s wallet</div>'+
+      '<div class="proglab"><b>'+o.members.length+' of '+o.members.length+' going</b><span style="color:var(--mut)">all paid</span></div><div class="prog"><span style="width:100%"></span></div>'+
+      o.members.map(function(x){return memRow(x,'pay');}).join('');
+    bar.innerHTML='<button class="btn ghost" onclick="go(\'tracker\')">See who’s going →</button>';
+  }else if(o.state==='sold'){
+    body.innerHTML='<div class="sob">⚠️ Sold out on webook — resale available</div>'+
+      '<div class="lead">'+o.members.filter(function(x){return x.status!=="pending";}).length+' of the group are in. Grab seats from verified fans on resell.webook.com.</div>'+
+      o.members.map(function(x){return memRow(x,'commit');}).join('');
+    bar.innerHTML='<button class="btn resale" onclick="openResale(curOuting.ev)">Find resale tickets →</button>';
+  }else if(o.state==='notify'){
+    var on=!!notifyState[o.id];
+    body.innerHTML='<div class="badge b">🔒 Not announced yet</div><div class="lead">We’re planning your whole winter — including the nights that haven’t dropped. Register interest and you’ll be first in.</div>';
+    bar.innerHTML='<button class="btn primary" id="oNotify" onclick="notifyOuting()">'+(on?'✓ Watching — you’ll be alerted':'🔔 Notify me when tickets drop')+'</button>';
+  }else if(o.state==='match'){
+    body.innerHTML='<div class="badge b">AI matching · opt-in</div><div class="lead">Your crew is busy this night. AI can seat you with people who genuinely share your taste — cross-checked against webook’s database.</div>';
+    bar.innerHTML='<button class="btn primary" onclick="openMatch()">Find my table →</button>';
+  }else{ /* ready */
+    var inCount=o.members.filter(function(x){return x.status==="in"||x.status==="you";}).length;
+    var pct=Math.round(inCount/o.members.length*100);
+    var link='webook.com/w/'+o.id+'-'+(1000+o.t.length);
+    body.innerHTML=
+      '<div class="invite"><div style="font-weight:800;font-size:15px">Invite '+o.group+' to join</div>'+
+        '<div class="msg">'+USER_NAME+': Let’s do <b>'+o.t+'</b> on '+o.d+'! Tap to join & grab your seat 👇<span class="lnk">'+link+'</span></div>'+
+        '<button class="btn wa" onclick="toast(\'Opening WhatsApp to '+o.group+'…\')">🟢 Invite on WhatsApp</button>'+
+        '<div class="row2" style="margin-top:8px"><button class="btn ghost" onclick="toast(\'Invite link copied\')">Copy link</button><button class="btn ghost" onclick="toast(\'Shared to '+o.group+'\')">Share</button></div>'+
+      '</div>'+
+      '<div class="proglab"><b>'+inCount+' of '+o.members.length+' in</b><span style="color:var(--mut)">'+o.group+'</span></div>'+
+      '<div class="prog"><span style="width:'+pct+'%"></span></div>'+
+      o.members.map(function(x){return memRow(x,'commit');}).join('');
+    bar.innerHTML='<button class="btn primary" onclick="openBook()">Book for the group →</button>';
+  }
+}
+function notifyOuting(){notifyState[curOuting.id]=!notifyState[curOuting.id];renderOuting();toast(notifyState[curOuting.id]?"Added to your watch-list — 24h early access":"Removed from watch-list");}
 
-/* ---------- itinerary ---------- */
-var curItMonth="Dec";
-function renderItabs(){
-  var w=document.getElementById('itabs'); w.innerHTML='';
-  MONTHS.forEach(function(m){
-    var b=document.createElement('div'); b.className='mtab'+(m===curItMonth?' on':''); b.textContent=m;
-    b.onclick=function(){curItMonth=m; renderItabs(); renderItins();}; w.appendChild(b);
-  });
+/* ===== book (mapped) ===== */
+var viaAdded=false;
+function openBook(){viaAdded=false;renderBook();setPay('own');go('book');}
+function renderBook(){
+  var o=curOuting,n=o.members.length;
+  var cart=document.getElementById('bkCart');
+  var addonPP=o.group==="Date Night"?0:30;
+  var addonName=o.group==="Date Night"?"":"Boulevard World passes";
+  var base=o.price*n;
+  var h=''+
+   '<div class="bk">'+thumbHtml(o,'th')+'<div class="c"><h3>'+o.t+'</h3><div class="sub">'+o.d+' · '+o.venue+' · '+n+' × SAR '+o.price+'</div></div><div class="amt">SAR '+base+'</div></div>';
+  if(addonName){
+    h+='<div class="ailab">AI: make it a full night</div>'+
+     '<div class="bk'+(viaAdded?' add':'')+'" id="viaRow"><div class="th" style="background:linear-gradient(135deg,#122a4a,#0a1424)">🌍</div><div class="c"><h3>'+addonName+'</h3><div class="sub">'+n+' × SAR '+addonPP+'</div></div>'+(viaAdded?'<span class="added">SAR '+(addonPP*n)+' · Added</span>':'<button class="addbtn" onclick="toggleVia()">Add</button>')+'</div>';
+  }
+  cart.innerHTML=h;
 }
-function renderItins(){
-  var w=document.getElementById('itList'); w.innerHTML='';
-  (ITINS[curItMonth]||[]).forEach(function(it){
-    var el=document.createElement('div'); el.className='itcard'+(it.act?' tap':'');
-    var thumb=it.img?'<div class="thumb photo" style="background-image:url(\''+it.img+'\')"></div>'
-                    :'<div class="thumb" style="background:'+it.g+'">'+it.emo+'</div>';
-    el.innerHTML=thumb+
-      '<div class="c"><div class="d">'+it.d+'</div><h3>'+it.t+'</h3><div class="why">'+it.why+'</div>'+
-      '<div class="ft"><span class="tag '+it.tag[0]+'">'+it.tag[1]+'</span><span class="circ-lab">'+it.circ+'</span></div></div>';
-    if(it.act){ el.onclick=function(){ handleItin(it); }; }
-    w.appendChild(el);
-  });
-}
-function handleItin(it){
-  if(it.act==="resale"){ openResale(it.ev); }
-  else if(it.act==="match"){ openMatch(); }
-  else if(it.act==="notify"){ go('notify'); }
-  else if(it.act==="commit"){ go('commit'); }
-}
-
-/* ---------- commit ---------- */
-function renderMembers(){
-  var w=document.getElementById('members'); w.innerHTML='';
-  MEMBERS.forEach(function(m){
-    var row=document.createElement('div'); row.className='mem';
-    var btn;
-    if(m.st==="you")btn='<button class="st you" onclick="imIn()">I’m In</button>';
-    else if(m.st==="in")btn='<span class="st in">In</span>';
-    else if(m.st==="resch")btn='<span class="st resch">Reschedule</span>';
-    else btn='<button class="st nudge" onclick="toast(\'Nudged '+m.nm+'\')">Nudge</button>';
-    row.innerHTML='<span class="av" style="background:'+m.c+'">'+m.in+'</span><span class="nm">'+m.nm+'</span>'+btn;
-    w.appendChild(row);
-  });
-  var pct=Math.min(100,Math.round(inCount/6*100));
-  document.getElementById('progBar').style.width=pct+'%';
-  document.getElementById('inCount').textContent=inCount;
-}
-function imIn(){ MEMBERS[0].st="in"; inCount=4; renderMembers(); toast("You're in! Crew can book now 🎾"); }
-
-/* ---------- book ---------- */
-function toggleVia(){
-  viaAdded=!viaAdded;
-  var btn=document.getElementById('viaBtn'); var row=document.getElementById('viaRow');
-  if(viaAdded){btn.outerHTML='<span class="added" id="viaBtn">Added</span>'; row.classList.add('add');}
-}
-var payMode='own';
+function toggleVia(){viaAdded=!viaAdded;renderBook();setPay(payMode);}
+function cartTotal(){var o=curOuting,n=o.members.length;var addonPP=o.group==="Date Night"?0:30;return o.price*n+(viaAdded?addonPP*n:0);}
+function perPerson(){var o=curOuting;var addonPP=o.group==="Date Night"?0:30;return o.price+(viaAdded?addonPP:0);}
 function setPay(mode){
   payMode=mode;
   document.getElementById('payOwn').classList.toggle('on',mode==='own');
   document.getElementById('payAll').classList.toggle('on',mode==='all');
-  var note=document.getElementById('payNote'), btn=document.getElementById('payBtn');
+  var note=document.getElementById('payNote'),btn=document.getElementById('payBtn');var o=curOuting,n=o.members.length;
   if(mode==='own'){
-    note.innerHTML='<span class="wbk">🔗 webook deep-link · one per person</span>'+
-      'Each of the 4 gets their own webook link for <b>Sun 27 Dec</b> — cart prefilled, they pay <b>SAR 230</b> for their seat. No one fronts the money, and it needs no new payment build.';
-    btn.textContent='Send everyone their webook link →';
+    note.innerHTML='<span class="wbk">🔗 webook deep-link · one per person</span>Each of the '+n+' gets their own webook link for <b>'+o.d+'</b> — cart prefilled, they pay <b>SAR '+perPerson()+'</b> for their seat. No one fronts the money, and it needs no new payment build.';
+    btn.textContent='Send everyone their link →';
   }else{
-    note.innerHTML='<span class="wbk">🔗 webook checkout · one cart</span>'+
-      'You open <b>webook</b> with all 4 tickets + add-ons prefilled and pay <b>SAR 920</b> in one go. Tickets drop into each person’s wallet.';
-    btn.textContent='Continue to webook · SAR 920 →';
+    note.innerHTML='<span class="wbk">🔗 webook checkout · one cart</span>You open <b>webook</b> with all '+n+' tickets prefilled and pay <b>SAR '+cartTotal()+'</b> in one go. Tickets drop into each person’s wallet.';
+    btn.textContent='Continue to webook · SAR '+cartTotal()+' →';
   }
 }
 function doBook(){
-  var b=document.getElementById('payBtn');
-  if(payMode==='own'){
-    toast('Pay links sent — each buys their seat on webook ✓');
-    b.textContent='Links sent ✓';
-  }else{
-    confetti(); toast('Opening webook — cart prefilled, just pay ✓');
-    b.textContent='Opening webook…';
+  if(payMode==='own'){renderPayown();go('payown');}
+  else{
+    curOuting.members.forEach(function(x){x.paid=true;});
+    confetti();toast('Paid on webook — tickets sent to all '+curOuting.members.length+' wallets ✓');
+    renderTracker();setTimeout(function(){go('tracker');},1200);
   }
-  setTimeout(function(){go('itin');},1700);
 }
 
-/* ---------- RESALE ---------- */
-var RESALE={
- "six-kings":{t:"Six Kings Slam",sub:"Sun 27 Dec · The Venue · sold out at face value.",face:200,
-   list:[["Lower bowl · Row F","Verified fan · sold 2 of 4",420,"over"],["Cat 2 · Row M","Verified fan",190,"under"],["Courtside pair","Verified fan · 2 together",640,"over"]]},
- "crown-jewel":{t:"WWE Crown Jewel",sub:"Fri 20 Nov · Kingdom Arena · sold out at face value.",face:180,
-   list:[["Floor · Block B","Verified fan",420,"over"],["Tier 1 · Row C","Verified fan",160,"under"],["Ringside","Verified fan · 2 together",880,"over"]]}
-};
+/* ===== pay-own experience ===== */
+function renderPayown(){
+  var o=curOuting;
+  /* mark: you paid, others link-sent (unpaid) */
+  o.members.forEach(function(x){x.paid=(x.status==="you");});
+  document.getElementById('poTitle').textContent='Each person pays for their seat';
+  document.getElementById('poSender').textContent=USER_NAME;
+  document.getElementById('poMsg').textContent='Join us for '+o.t+' on '+o.d+'! Grab your seat 👇';
+  document.getElementById('poLink').textContent='webook.com/w/'+o.id+'-'+(1000+o.t.length);
+  document.getElementById('poPrice').textContent='Your seat · SAR '+perPerson();
+  document.getElementById('poLead').textContent='Everyone in '+o.group+' gets their own webook link. No one fronts the money.';
+  document.getElementById('poMembers').innerHTML=o.members.filter(function(x){return x.status!=="you";}).map(function(x){return '<div class="mem"><span class="av" style="background:'+x.c+'">'+ini(x.nm)+'</span><span class="nm">'+x.nm+'<small>Link sent on WhatsApp</small></span><span class="st pending">Sent</span></div>';}).join('');
+}
+
+/* ===== tracker ===== */
+function renderTracker(){
+  var o=curOuting;
+  document.getElementById('trTitle').textContent=o.t+' — who’s paid';
+  var paid=o.members.filter(function(x){return x.paid;}).length,n=o.members.length;
+  var left=n-paid;
+  document.getElementById('trCount').textContent=paid;
+  document.getElementById('trTotal').textContent=n;
+  document.getElementById('trLeft').textContent=left?left+' still to pay':'everyone paid 🎉';
+  document.getElementById('trBar').style.width=Math.round(paid/n*100)+'%';
+  document.getElementById('trMembers').innerHTML=o.members.map(function(x){return memRow(x,'pay');}).join('');
+  var btn=document.getElementById('trBtn');
+  if(left){btn.textContent='Nudge everyone pending';btn.className='btn primary';btn.disabled=false;}
+  else{btn.textContent='Everyone paid — see you there 🎉';btn.className='btn ghost';btn.disabled=true;}
+}
+function remind(nm){
+  /* demo: reminding marks them paid so the flow is visible */
+  var mem=curOuting.members.filter(function(x){return x.nm===nm;})[0];
+  if(mem){mem.paid=true;toast(nm+' paid — ticket in their wallet ✓');renderTracker();}
+}
+function nudgeAll(){
+  curOuting.members.forEach(function(x){x.paid=true;});
+  confetti();toast('Nudged everyone — all paid 🎉');renderTracker();
+}
+
+/* ===== resale ===== */
 function openResale(id){
   var r=RESALE[id]||RESALE["six-kings"];
-  document.getElementById('rTitle').textContent=r.t;
-  document.getElementById('rSub').textContent=r.sub;
-  var w=document.getElementById('rListings'); w.innerHTML='';
-  r.list.forEach(function(L){
-    var diff=L[2]-r.face; var fcls=L[3];
-    var ftxt=(diff>0?'+SAR '+diff+' vs face':(diff<0?'SAR '+(-diff)+' under face':'at face'));
-    var el=document.createElement('div'); el.className='listing';
-    el.innerHTML='<div class="c"><div class="lseat">'+L[0]+'</div><div class="lwho">'+L[1]+' · <span class="vf">✓ verified</span></div></div>'+
-      '<div class="pr"><div class="p">SAR '+L[2]+'</div><div class="f '+fcls+'">'+ftxt+'</div></div>'+
-      '<button class="rbuy" onclick="toast(\'Resale ticket secured — re-issued to your phone ✓\')">Buy</button>';
-    w.appendChild(el);
-  });
+  document.getElementById('rTitle').textContent=r.t;document.getElementById('rSub').textContent=r.sub;
+  var w=document.getElementById('rListings');w.innerHTML='';
+  r.list.forEach(function(L){var diff=L[2]-r.face;var fcls=L[3];var ftxt=(diff>0?'+SAR '+diff+' vs face':(diff<0?'SAR '+(-diff)+' under face':'at face'));var el=document.createElement('div');el.className='listing';el.innerHTML='<div class="c"><div class="lseat">'+L[0]+'</div><div class="lwho">'+L[1]+' · <span class="vf">✓ verified</span></div></div><div class="pr"><div class="p">SAR '+L[2]+'</div><div class="f '+fcls+'">'+ftxt+'</div></div><button class="rbuy" onclick="toast(\'Resale ticket secured — re-issued to your phone ✓\')">Buy</button>';w.appendChild(el);});
   go('resale');
 }
 
-/* ---------- MATCH ---------- */
-var SCAN=[
- ["🎫","Order history","Who booked the same events you did"],
- ["🧬","Profile interest layers","Live music, tennis, dining, culture"],
- ["🎮","Taste-game answers","Vibe, outings, people & budget"],
- ["🛡️","Verified & safe","Verified accounts · women-only option honoured"]
-];
+/* ===== match ===== */
+var SCAN=[["🎫","Order history","Who booked the same events you did"],["🧬","Profile interest layers","Live music, tennis, dining, culture"],["🎮","Taste-game answers","Vibe, outings, people & budget"],["🛡️","Verified & safe","Verified accounts · women-only option honoured"]];
+var matchRun=false;
 function openMatch(){
-  go('match'); closeMenu();
-  var rows=document.getElementById('scanRows'); rows.innerHTML='';
+  go('match');closeMenu();
+  var rows=document.getElementById('scanRows');rows.innerHTML='';
   document.getElementById('matchResult').hidden=true;
-  var btn=document.getElementById('matchBtn'); btn.disabled=true; btn.style.opacity=".5";
-  SCAN.forEach(function(s,i){
-    var el=document.createElement('div'); el.className='scan'; el.id='scan'+i;
-    el.innerHTML='<div class="ic">'+s[0]+'</div><div style="flex:1">'+s[1]+'<span class="sub">'+s[2]+'</span></div><div class="spin" id="spin'+i+'"></div>';
-    rows.appendChild(el);
-  });
-  if(matchRun){ /* re-entry: fill instantly */ }
-  var i=0;
-  (function step(){
-    if(i>0){ var prev=document.getElementById('scan'+(i-1)); prev.classList.add('done');
-      var sp=document.getElementById('spin'+(i-1)); if(sp)sp.outerHTML='<div class="ic" style="background:rgba(34,197,94,.2);color:#4ade80;width:22px;height:22px">✓</div>'; }
-    if(i<SCAN.length){ i++; setTimeout(step,560); }
-    else{ showMatchResult(); }
-  })();
+  var btn=document.getElementById('matchBtn');btn.disabled=true;
+  SCAN.forEach(function(s,i){var el=document.createElement('div');el.className='scan';el.id='scan'+i;el.innerHTML='<div class="ic">'+s[0]+'</div><div style="flex:1">'+s[1]+'<span class="sub">'+s[2]+'</span></div><div class="spin" id="spin'+i+'"></div>';rows.appendChild(el);});
+  var i=0;(function step(){if(i>0){var prev=document.getElementById('scan'+(i-1));prev.classList.add('done');var sp=document.getElementById('spin'+(i-1));if(sp)sp.outerHTML='<div class="ic" style="background:rgba(34,197,94,.2);color:#4ade80;width:22px;height:22px">✓</div>';}if(i<SCAN.length){i++;setTimeout(step,560);}else{showMatchResult();}})();
 }
 function showMatchResult(){
-  var res=runMatch();
-  document.getElementById('confNum').textContent=res.conf;
-  var w=document.getElementById('candList'); w.innerHTML='';
-  res.table.forEach(function(s){
-    var c=s.c;
-    var sigs='';
-    if(s.sharedEv.length)sigs+='<span class="sgtag db">🎫 Also booked '+s.sharedEv.slice(0,2).join(', ')+'</span>';
-    if(s.sharedLayers.length)sigs+='<span class="sgtag">'+s.sharedLayers.slice(0,2).join(' · ')+'</span>';
-    sigs+='<span class="sgtag">'+(c.budget===USER.budget?'same budget':'close budget')+'</span>';
-    var el=document.createElement('div'); el.className='cand';
-    el.innerHTML=
-      '<div class="hd"><span class="av" style="background:'+c.c+'">'+c.in+'</span>'+
-        '<div class="nm"><b>'+c.nm+' · '+(c.gender==="f"?"verified":"verified")+'</b><span class="mut">Riyadh Season regular</span></div>'+
-        '<div class="score"><div class="n">'+s.overall+'</div><div class="l">MATCH</div></div></div>'+
-      '<div class="sigbars">'+
-        bar('Bookings','b-book',s.book)+bar('Interests','b-int',s.inter)+
-        bar('Game vibe','b-vibe',s.vibe)+bar('Budget','b-bud',s.bud)+
-      '</div><div class="signals">'+sigs+'</div>';
-    w.appendChild(el);
-  });
-  /* honest cross-check example: the strongest profile we did NOT seat */
-  var feed=document.getElementById('matchFeed');
-  var d=res.dropped[0];
-  if(d){
-    var extra='';
-    if(d.book>=50 && d.vibe<60){
-      extra=' <b>'+d.c.nm+'</b> books the very same events as you ('+d.book+'% overlap) but plays at a calmer pace, so the game’s vibe score keeps her just off this high-energy table. The database finds the overlap; the game breaks the tie.';
-    }else{
-      extra=' '+d.c.nm+' scored '+d.overall+' — real history too far from yours to seat.';
-    }
-    feed.innerHTML='<b>How the score is built:</b> shared bookings 35% · interest layers 30% · game vibe &amp; outings 20% · budget 15%.'+extra;
-  }
-  document.getElementById('matchResult').hidden=false;
-  var btn=document.getElementById('matchBtn'); btn.disabled=false; btn.style.opacity="1";
-  matchRun=true;
+  var res=runMatch();document.getElementById('confNum').textContent=res.conf;
+  var w=document.getElementById('candList');w.innerHTML='';
+  res.table.forEach(function(s){var c=s.c;var sigs='';if(s.sharedEv.length)sigs+='<span class="sgtag db">🎫 Also booked '+s.sharedEv.slice(0,2).join(', ')+'</span>';if(s.sharedLayers.length)sigs+='<span class="sgtag">'+s.sharedLayers.slice(0,2).join(' · ')+'</span>';sigs+='<span class="sgtag">'+(c.budget===USER.budget?'same budget':'close budget')+'</span>';var el=document.createElement('div');el.className='cand';el.innerHTML='<div class="hd"><span class="av" style="background:'+c.c+'">'+c.in+'</span><div class="nm"><b>'+c.nm+' · verified</b><span class="mut">Riyadh Season regular</span></div><div class="score"><div class="n">'+s.overall+'</div><div class="l">MATCH</div></div></div><div class="sigbars">'+bar('Bookings','b-book',s.book)+bar('Interests','b-int',s.inter)+bar('Game vibe','b-vibe',s.vibe)+bar('Budget','b-bud',s.bud)+'</div><div class="signals">'+sigs+'</div>';w.appendChild(el);});
+  var feed=document.getElementById('matchFeed');var d=res.dropped[0];
+  if(d){var extra=(d.book>=50&&d.vibe<60)?' <b>'+d.c.nm+'</b> books the very same events as you ('+d.book+'% overlap) but plays at a calmer pace, so the game’s vibe score keeps her just off this high-energy table. The database finds the overlap; the game breaks the tie.':' '+d.c.nm+' scored '+d.overall+' — real history too far from yours to seat.';feed.innerHTML='<b>How the score is built:</b> shared bookings 35% · interest layers 30% · game vibe &amp; outings 20% · budget 15%.'+extra;}
+  document.getElementById('matchResult').hidden=false;document.getElementById('matchBtn').disabled=false;matchRun=true;
 }
-function bar(lab,cls,val){
-  return '<div class="sigbar '+cls+'"><span class="lab">'+lab+'</span>'+
-    '<span class="track"><span style="width:'+val+'%"></span></span>'+
-    '<span class="val">'+val+'</span></div>';
-}
+function bar(lab,cls,val){return '<div class="sigbar '+cls+'"><span class="lab">'+lab+'</span><span class="track"><span style="width:'+val+'%"></span></span><span class="val">'+val+'</span></div>';}
 
-/* ---------- NOTIFY ---------- */
-var NOTIFY=[
- {id:"abu-bakr",t:"Abu Bakr Salem Stage",sub:"Concert series · headliner lineup TBA",emo:"🎤",g:"linear-gradient(135deg,#4a0f2e,#140610)"},
- {id:"nye",t:"New Year's Eve concert",sub:"31 Dec · artist to be announced",emo:"🎆",g:"linear-gradient(135deg,#1c1240,#0a0716)"},
- {id:"afc-final",t:"AFC Asian Cup — knockouts",sub:"Feb · match dates not released",emo:"🏆",g:"linear-gradient(135deg,#113a2e,#08140f)"},
- {id:"comedy",t:"Winter comedy headliner",sub:"BLVD City Theater · surprise act",emo:"🎙️",g:"linear-gradient(135deg,#2a1248,#0c0716)"}
-];
-function renderNotify(){
-  var w=document.getElementById('notifyList'); w.innerHTML='';
-  NOTIFY.forEach(function(n){
-    var on=!!notifyState[n.id];
-    var el=document.createElement('div'); el.className='ncard'+(on?' on':'');
-    el.innerHTML='<div class="th" style="background:'+n.g+'">'+n.emo+'<span class="lock">🔒</span></div>'+
-      '<div class="c"><h3>'+n.t+'</h3><div class="sub">'+n.sub+'</div></div>'+
-      '<button class="nbtn'+(on?' on':'')+'" id="nb-'+n.id+'">'+(on?'✓ Watching':'🔔 Notify me')+'</button>';
-    w.appendChild(el);
-    el.querySelector('#nb-'+n.id).onclick=function(e){ e.stopPropagation(); toggleNotify(n.id); };
-  });
-  var cnt=Object.keys(notifyState).filter(function(k){return notifyState[k];}).length;
-  document.getElementById('notifyCount').textContent=cnt;
-}
-function toggleNotify(id){
-  notifyState[id]=!notifyState[id];
-  renderNotify();
-  toast(notifyState[id]?"Added to watch-list — you'll get 24h early access":"Removed from watch-list");
-}
+/* ===== notify screen ===== */
+function renderNotify(){var w=document.getElementById('notifyList');w.innerHTML='';NOTIFY.forEach(function(nn){var on=!!notifyState[nn.id];var el=document.createElement('div');el.className='ncard'+(on?' on':'');el.innerHTML='<div class="th" style="background:'+nn.g+'">'+nn.emo+'<span class="lock">🔒</span></div><div class="c"><h3>'+nn.t+'</h3><div class="sub">'+nn.sub+'</div></div><button class="nbtn'+(on?' on':'')+'" id="nb-'+nn.id+'">'+(on?'✓ Watching':'🔔 Notify me')+'</button>';w.appendChild(el);el.querySelector('#nb-'+nn.id).onclick=function(e){e.stopPropagation();toggleNotify(nn.id);};});var cnt=Object.keys(notifyState).filter(function(k){return notifyState[k];}).length;document.getElementById('notifyCount').textContent=cnt;}
+function toggleNotify(id){notifyState[id]=!notifyState[id];renderNotify();toast(notifyState[id]?"Added to watch-list — you'll get 24h early access":"Removed from watch-list");}
 
-/* ---------- nav / ui ---------- */
-var STEP={swipe:"Step 1 of 4",free:"Step 2 of 4",invite:"Step 3 of 4",itin:"Step 4 of 4",
-  commit:"Group commitment",book:"You're the organizer",resale:"Sold out → resale",
-  match:"AI matching",blind:"Your table",notify:"Plan ahead"};
-function go(id){
-  closeMenu();
-  [].slice.call(document.querySelectorAll('.screen')).forEach(function(s){s.classList.toggle('active',s.dataset.s===id);});
-  document.getElementById('step').textContent=STEP[id]||'';
-  var b=document.querySelector('.screen.active .body'); if(b)b.scrollTop=0;
-  if(id==='notify')renderNotify();
-}
+/* ===== nav / ui ===== */
+var STEP={swipe:"Step 1 of 4",free:"Step 2 of 4",you:"Step 3 of 4",timeline:"Step 4 of 4",outing:"Your plan",book:"Checkout",payown:"Everyone pays own",tracker:"Payment tracker",match:"AI matching",blind:"Your table",resale:"Sold out → resale",notify:"Plan ahead"};
+function go(id){closeMenu();[].slice.call(document.querySelectorAll('.screen')).forEach(function(s){s.classList.toggle('active',s.dataset.s===id);});document.getElementById('step').textContent=STEP[id]||'';var b=document.querySelector('.screen.active .body');if(b)b.scrollTop=0;if(id==='notify')renderNotify();if(id==='tracker')renderTracker();}
 function openMenu(){document.getElementById('sheet').classList.add('show');}
 function closeMenu(){document.getElementById('sheet').classList.remove('show');}
 var tT;
-function toast(msg){var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
-  clearTimeout(tT);tT=setTimeout(function(){t.classList.remove('show');},2200);}
-function confetti(){var w=document.getElementById('confetti');var cs=['#ec1f82','#ff4aa0','#ffd166','#6ee7b7','#5aa9ff'];
-  for(var i=0;i<60;i++){var p=document.createElement('i');p.style.left=Math.random()*100+'%';
-    p.style.background=cs[i%cs.length];p.style.animationDelay=(Math.random()*.5)+'s';
-    p.style.transform='rotate('+(Math.random()*360)+'deg)';w.appendChild(p);
-    (function(el){setTimeout(function(){el.remove();},2400);})(p);}}
+function toast(msg){var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(tT);tT=setTimeout(function(){t.classList.remove('show');},2200);}
+function confetti(){var w=document.getElementById('confetti');var cs=['#ec1f82','#ff4aa0','#ffd166','#6ee7b7','#5aa9ff'];for(var i=0;i<60;i++){var p=document.createElement('i');p.style.left=Math.random()*100+'%';p.style.background=cs[i%cs.length];p.style.animationDelay=(Math.random()*.5)+'s';p.style.transform='rotate('+(Math.random()*360)+'deg)';w.appendChild(p);(function(el){setTimeout(function(){el.remove();},2400);})(p);}}
 
 /* init */
-(function(){var dk=document.getElementById('deck');
-  dk.addEventListener('pointerdown',deckDown);
-  window.addEventListener('pointermove',deckMove);
-  window.addEventListener('pointerup',deckEnd);
-  window.addEventListener('pointercancel',deckEnd);
-})();
-renderCats(); buildDeck();
-renderMtabs(); renderCal(); renderWho();
-renderCircles();
-renderItabs(); renderItins();
-renderMembers();
-setPay('own');
+(function(){var dk=document.getElementById('deck');dk.addEventListener('pointerdown',deckDown);window.addEventListener('pointermove',deckMove);window.addEventListener('pointerup',deckEnd);window.addEventListener('pointercancel',deckEnd);})();
+renderCats();buildDeck();
+renderMtabs();renderCal();renderWho();
+setName('Omar');renderCircles();
+renderTimeline();
 renderNotify();
 </script>
