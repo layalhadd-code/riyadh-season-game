@@ -669,7 +669,7 @@ button{font-family:inherit}
 
 <script>
 /* ===== swipe catalogue (real Riyadh Season 26-27) ===== */
-var EVENTS=[
+var CATALOG=[
  {id:"six-kings",t:"Six Kings Slam",cat:"Sports",when:"27, 28 & 30 Dec",venue:"The Venue",price:"From SAR 200",emo:"🎾",g:"linear-gradient(135deg,#2a1248,#0c0716)",demand:"sold",fr:"3 friends said yes"},
  {id:"crown-jewel",t:"WWE Crown Jewel",cat:"Sports",when:"20 Nov",venue:"Kingdom Arena",price:"From SAR 180",emo:"🤼",g:"linear-gradient(135deg,#4a0f1e,#140608)",demand:"sold",fr:"5 friends said yes"},
  {id:"afc",t:"AFC Asian Cup 2027",cat:"Sports",when:"7 Jan",venue:"King Fahd Sports City",price:"From SAR 120",emo:"⚽",g:"linear-gradient(135deg,#113a2e,#08140f)",demand:"hot",fr:"5 friends said yes"},
@@ -679,14 +679,47 @@ var EVENTS=[
  {id:"al-ommda",t:"Al Ommda",cat:"Shows",when:"Dec",venue:"BLVD City Theater",price:"From SAR 90",emo:"😂",g:"linear-gradient(135deg,#2a1248,#0c0716)",demand:"ok",fr:"2 friends said yes"},
  {id:"groves",t:"The Groves · 5 Years",cat:"Restaurants",when:"From Nov",venue:"Themed restaurants",price:"Pay at venue",emo:"🍽️",g:"linear-gradient(135deg,#113a2e,#0a1f18)",demand:"ok",fr:"Work crew said yes"},
  {id:"ethnosport",t:"Ethnosport Festival",cat:"Culture",when:"Nov",venue:"Heritage grounds",price:"From SAR 60",emo:"🏇",g:"linear-gradient(135deg,#3a2a10,#140f06)",demand:"ok",fr:"3 friends said yes"},
- {id:"via",t:"VIA Riyadh · Film & Dinner",cat:"Zones",when:"All season",venue:"VOX + fine dining",price:"From SAR 120",emo:"🎬",g:"linear-gradient(135deg,#231233,#0c0716)",demand:"ok",fr:"Date night"},
+ {id:"via",t:"VIA Riyadh",cat:"Restaurants",when:"All season",venue:"Fine dining & VOX cinema",price:"From SAR 120",emo:"🎬",g:"linear-gradient(135deg,#231233,#0c0716)",demand:"ok",fr:"Date-night pick"},
  {id:"pier",t:"BLVD Pier rides",cat:"Experiences",when:"All season",venue:"Boulevard World",price:"From SAR 90",emo:"🎢",g:"linear-gradient(135deg,#2a1248,#0c0716)",demand:"hot",fr:"Thrill-seekers said yes"},
- {id:"gymkhana",t:"Gymkhana · VIA Riyadh",cat:"Restaurants",when:"All season",venue:"VIA Riyadh",price:"Michelin · Indian",emo:"🍛",g:"linear-gradient(135deg,#3a2410,#140d06)",demand:"ok",fr:"Foodies said yes"},
+ {id:"ufc",t:"UFC Riyadh",cat:"Sports",when:"Dec",venue:"Kingdom Arena",price:"From SAR 250",emo:"🥋",g:"linear-gradient(135deg,#3a1012,#140607)",demand:"hot",fr:"4 friends said yes"},
+ {id:"farmers",t:"Farmers Market",cat:"Restaurants",when:"From Dec",venue:"Farm-to-table",price:"From SAR 40",emo:"🥐",g:"linear-gradient(135deg,#4a3312,#160f06)",demand:"ok",fr:"3 friends said yes"},
+ {id:"formula-e",t:"Formula E Karting",cat:"Experiences",when:"All season",venue:"SEVEN AlHamra",price:"From SAR 110",emo:"🏎️",g:"linear-gradient(135deg,#102a3a,#0a1620)",demand:"ok",fr:"The Boys said yes"},
+ {id:"zodiac",t:"Zodiac Garden · The Groves",cat:"Restaurants",when:"From Nov",venue:"The Groves",price:"Italian-Japanese",emo:"🍱",g:"linear-gradient(135deg,#1c2a4a,#0a1020)",demand:"ok",fr:"Date-night pick"},
+ {id:"zoo",t:"Riyadh Zoo · Giraffe",cat:"Kids",when:"All season",venue:"Riyadh Zoo",price:"From SAR 50",emo:"🦒",g:"linear-gradient(135deg,#2a3a12,#121806)",demand:"ok",fr:"Family said yes"},
+ {id:"peekaboo",t:"Peekaboo · ages 0–5",cat:"Kids",when:"From Nov",venue:"Wonder Garden",price:"From SAR 40",emo:"🧸",g:"linear-gradient(135deg,#3a1540,#140815)",demand:"ok",fr:"Little ones said yes"},
+ {id:"powerslap",t:"Power Slap",cat:"Sports",when:"Nov–Dec",venue:"Kingdom Arena",price:"From SAR 150",emo:"👊",g:"linear-gradient(135deg,#3a1012,#140607)",demand:"hot",fr:"3 friends said yes"},
+ {id:"aldirah",t:"AlDirah Winter",cat:"Zones",when:"From Nov",venue:"Historic Diriyah",price:"From SAR 40",emo:"🕌",g:"linear-gradient(135deg,#3a2a12,#140f06)",demand:"ok",fr:"Heritage nights"},
+ {id:"seven",t:"SEVEN AlHamra",cat:"Zones",when:"All season",venue:"Transformers & Formula E",price:"From SAR 95",emo:"🤖",g:"linear-gradient(135deg,#102a3a,#0a1620)",demand:"ok",fr:"The Boys said yes"},
+ {id:"diva",t:"The Diva",cat:"Shows",when:"Dec",venue:"BLVD City Theater",price:"From SAR 90",emo:"🎭",g:"linear-gradient(135deg,#2a1248,#0c0716)",demand:"ok",fr:"Comedy night"},
+ {id:"escape",t:"No Way Out · escape room",cat:"Experiences",when:"All season",venue:"Boulevard City",price:"From SAR 80",emo:"🔓",g:"linear-gradient(135deg,#1c2a4a,#0a1020)",demand:"ok",fr:"Uni friends said yes"},
+ {id:"flyingsaudi",t:"Flying Over Saudi · 5D",cat:"Experiences",when:"All season",venue:"Boulevard City",price:"From SAR 70",emo:"🪂",g:"linear-gradient(135deg,#113a2e,#08140f)",demand:"hot",fr:"Family said yes"},
+ {id:"pubg",t:"PUBG Outbreak",cat:"Experiences",when:"All season",venue:"Boulevard World",price:"From SAR 90",emo:"🎮",g:"linear-gradient(135deg,#2a1a08,#120a04)",demand:"ok",fr:"The Boys said yes"},
+ {id:"littlestar",t:"Little Star makeover",cat:"Kids",when:"From Nov",venue:"Wonder Garden",price:"From SAR 45",emo:"⭐",g:"linear-gradient(135deg,#2a1a4a,#0e0a1e)",demand:"ok",fr:"Little ones said yes"},
+ {id:"eln",t:"EL&N London",cat:"Restaurants",when:"All season",venue:"Boulevard City",price:"Café · desserts",emo:"☕",g:"linear-gradient(135deg,#4a1030,#160610)",demand:"ok",fr:"Insta-famous"},
+ {id:"samad",t:"Samad Al-Iraqi",cat:"Restaurants",when:"All season",venue:"Boulevard City",price:"Iraqi",emo:"🍲",g:"linear-gradient(135deg,#3a2a10,#140f06)",demand:"ok",fr:"Family said yes"},
+ {id:"layali",t:"Layali Adan",cat:"Restaurants",when:"All season",venue:"Boulevard City",price:"Yemeni",emo:"🍛",g:"linear-gradient(135deg,#2a1a0a,#120a04)",demand:"ok",fr:"Work crew said yes"},
  {id:"cocomelon",t:"CoComelon Playdate",cat:"Kids",when:"All season",venue:"Boulevard City",price:"From SAR 60",emo:"🎵",g:"linear-gradient(135deg,#2a1a4a,#0e0a1e)",demand:"ok",fr:"Kids love it"},
  {id:"dolphin",t:"BLVD Dolphinarium",cat:"Kids",when:"All season",venue:"Boulevard World",price:"From SAR 70",emo:"🐬",g:"linear-gradient(135deg,#102a4a,#0a1424)",demand:"ok",fr:"Family said yes"},
  {id:"abu-bakr",t:"Abu Bakr Salem Stage",cat:"Concerts",when:"Headliner TBA",venue:"BLVD City",price:"Coming soon",emo:"🎤",g:"linear-gradient(135deg,#4a0f2e,#140610)",demand:"soon",fr:"Lineup drops soon"},
  {id:"nye",t:"New Year's Eve concert",cat:"Concerts",when:"31 Dec · TBA",venue:"To be announced",price:"Coming soon",emo:"🎆",g:"linear-gradient(135deg,#1c1240,#0a0716)",demand:"soon",fr:"Always sells fast"}
 ];
+/* each user gets their own mix — staples + a varying subset (restaurants, kids, zones, sports, experiences differ per session) */
+function sessionDeck(){
+  function pick(a,n){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1)),t=a[i];a[i]=a[j];a[j]=t;}return a.slice(0,n);}
+  function cat(c){return CATALOG.filter(function(e){return e.cat===c;});}
+  function ids(list){return list.map(function(id){return CATALOG.filter(function(e){return e.id===id;})[0];}).filter(Boolean);}
+  return [].concat(
+    ids(['six-kings']), pick(ids(['crown-jewel','afc','ufc','powerslap']),2),
+    pick(ids(['blvd-world','wonder','aldirah','seven']),2),
+    pick(ids(['toy-shop','al-ommda','diva']),2),
+    pick(cat('Restaurants'),3),
+    pick(cat('Kids'),2),
+    pick(cat('Experiences'),1),
+    ids(['ethnosport']),
+    ids(['abu-bakr','nye'])
+  );
+}
+var EVENTS=sessionDeck();
 var IMG={"six-kings":"six-kings.jpg","crown-jewel":"crown-jewel.jpg","ufc":"ufc.jpg","blvd-world":"blvd-world.jpg","wonder":"wonder.jpg","toy-shop":"toy-shop.jpg","al-ommda":"al-ommda.jpg","groves":"groves.jpg","ethnosport":"ethnosport.jpg","via":"via.jpg","farmers":"farmers.jpg","formula-e":"formula-e.jpg","abu-bakr":"abu-bakr.jpg","pier":"pier.jpg","zodiac":"zodiac.jpg","gymkhana":"gymkhana.jpg","cutco":"cutco.jpg","cocomelon":"cocomelon.jpg","dolphin":"dolphin.jpg","zoo":"zoo.jpg","peekaboo":"peekaboo.jpg"};
 var CATS=["All","Sports","Concerts","Restaurants","Kids","Zones","Shows","Experiences","Culture"];
 
@@ -752,7 +785,7 @@ function scoreCandidate(c){
   var vibe=Math.min(100,(c.vibe===USER.vibe?60:15)+Math.min(40,overlapCount(USER.outings,c.outings)*18));
   var bud=c.budget===USER.budget?100:(Math.abs(["low","mid","premium"].indexOf(c.budget)-["low","mid","premium"].indexOf(USER.budget))===1?55:20);
   var overall=Math.round(.35*book+.30*inter+.20*vibe+.15*bud);
-  var sharedEv=c.booked.filter(function(x){return USER.booked.concat(USER.picks).indexOf(x)>=0;}).map(function(x){var e=EVENTS.filter(function(ev){return ev.id===x;})[0];return e?e.t:x;});
+  var sharedEv=c.booked.filter(function(x){return USER.booked.concat(USER.picks).indexOf(x)>=0;}).map(function(x){var e=CATALOG.filter(function(ev){return ev.id===x;})[0];return e?e.t:x;});
   var sharedLayers=c.layers.filter(function(x){return USER.layers.indexOf(x)>=0;});
   return {c:c,overall:overall,book:book,inter:inter,vibe:vibe,bud:bud,sharedEv:sharedEv,sharedLayers:sharedLayers};
 }
