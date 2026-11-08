@@ -421,15 +421,14 @@ button{font-family:inherit}
         </div>
         <div class="subh" id="circMemH">Members</div>
         <div id="circMembers"></div>
-        <div class="subh">Add people from webook</div>
+        <div class="subh">Add from your contacts</div>
+        <div class="src" style="margin:-4px 0 8px;color:var(--mut)">Matched to webook by phone number (hashed). Only people already on webook show ✓ — the rest you invite.</div>
+        <div id="contactsList"></div>
+        <div class="subh">Or search webook</div>
         <input id="circSearch" class="searchbox" placeholder="Search webook users by name or @handle…" oninput="circleSearch(this.value)" autocomplete="off">
         <div id="searchResults"></div>
-        <div class="subh">Not on webook yet?</div>
-        <button class="btn wa" onclick="toast('Opening WhatsApp to share an invite link…')">🟢 Invite by WhatsApp link</button>
-        <div class="row2" style="margin-top:8px"><button class="btn ghost" onclick="toast('Invite link copied')">Copy link</button><button class="btn ghost" onclick="toast('Shared')">Share</button></div>
-        <div class="src" style="margin-top:8px;color:var(--mut)">Anyone who taps the link signs up → joins your circle. That's the growth loop.</div>
       </div>
-      <div class="actionbar"><button class="btn primary" onclick="go('timeline')">Done — see my winter</button></div>
+      <div class="actionbar"><button class="btn primary" onclick="circleDone()">Done</button></div>
     </section>
 
     <!-- 4 TIMELINE -->
@@ -641,37 +640,36 @@ function m(nm,status,paid){return {nm:nm,status:status,paid:!!paid,c:nm==="You"?
 function ini(nm){return nm==="You"?initials(USER_NAME):nm.slice(0,2).toUpperCase();}
 
 /* circles the user owns (you are the implicit owner; members are others) */
-var CIRCLES=[
- {id:"boys",nm:"The Boys",members:[{nm:"Faisal",st:"member"},{nm:"Khalid",st:"member"},{nm:"Majed",st:"member"},{nm:"Turki",st:"member"},{nm:"Ziyad",st:"member"}]},
- {id:"family",nm:"Family",members:[{nm:"Dana",st:"member"},{nm:"Reem",st:"member"},{nm:"Hind",st:"member"}]},
- {id:"uni",nm:"Uni Friends",members:[{nm:"Lama",st:"member"},{nm:"Noura",st:"member"},{nm:"Sara",st:"member"}]},
- {id:"date",nm:"Date Night",members:[{nm:"Partner",st:"member"}]}
-];
+/* you start with NO circles — you build them from contacts / webook search */
+var CIRCLES=[];
 /* other webook users you can search + add */
 var WEBOOK_USERS=[{nm:"Yousef",h:"@yousef"},{nm:"Abdullah",h:"@abdullah"},{nm:"Sultan",h:"@sultan"},{nm:"Reema",h:"@reema"},{nm:"Saud",h:"@saud"},{nm:"Layan",h:"@layan"},{nm:"Faris",h:"@faris"},{nm:"Maha",h:"@maha"},{nm:"Nawaf",h:"@nawaf"},{nm:"Hessa",h:"@hessa"}];
-var curCircle=null;
+/* device contacts — matched to webook by (hashed) phone number */
+var CONTACTS=[
+ {nm:"Yousef",ph:"+966 5X XXX 1180",onWebook:true},
+ {nm:"Sultan",ph:"+966 5X XXX 4420",onWebook:true},
+ {nm:"Reema",ph:"+966 5X XXX 9033",onWebook:true},
+ {nm:"Abdullah",ph:"+966 5X XXX 7781",onWebook:true},
+ {nm:"Mom",ph:"+966 5X XXX 2210",onWebook:false},
+ {nm:"Tariq work",ph:"+966 5X XXX 5567",onWebook:false},
+ {nm:"Noura",ph:"+966 5X XXX 3390",onWebook:true},
+ {nm:"Faris",ph:"+966 5X XXX 8812",onWebook:true}
+];
+var curCircle=null, _returnOuting=null;
 
 /* ===== the winter timeline (each outing carries its own group + members) ===== */
 var OUTINGS=[
- {id:"blvd-open",mon:"Nov",d:"Sat 28 Nov",t:"Boulevard World opening",venue:"Boulevard World",emo:"🌍",img:"blvd-world.jpg",price:30,group:"Family",state:"booked",why:"Season's open. All 4 of you are free.",
-   members:[m("You","you",1),m("Dana","in",1),m("Reem","in",1),m("Hind","in",1)]},
- {id:"crown",mon:"Nov",d:"Fri 20 Nov",t:"WWE Crown Jewel",venue:"Kingdom Arena",emo:"🤼",img:"crown-jewel.jpg",price:180,group:"The Boys",state:"sold",ev:"crown-jewel",why:"5 of the group want in. Sold out at face — resale found.",
-   members:[m("You","you"),m("Faisal","in"),m("Khalid","in"),m("Majed","in"),m("Turki","pending"),m("Ziyad","pending")]},
- {id:"toy",mon:"Dec",d:"Fri 4 Dec",t:"The Toy Shop",venue:"Global Theater, BLVD City",emo:"🎭",img:"toy-shop.jpg",price:80,group:"Family",state:"ready",why:"The kids said yes. All 4 free.",
-   members:[m("You","you",1),m("Dana","in",1),m("Reem","in"),m("Hind","pending")]},
- {id:"ommda",mon:"Dec",d:"Sat 12 Dec",t:"Al Ommda + Farmers Market",venue:"BLVD City Theater",emo:"😂",img:"al-ommda.jpg",price:90,group:"Uni Friends",state:"ready",why:"Comedy night, then food. 5 of 7 free.",
-   members:[m("You","you",1),m("Lama","in"),m("Noura","pending"),m("Sara","pending")]},
- {id:"six",mon:"Dec",d:"Sun 27 Dec",t:"Six Kings Slam",venue:"The Venue",emo:"🎾",img:"six-kings.jpg",price:200,group:"The Boys",state:"sold",ev:"six-kings",why:"Omar's busy Thu–Sat, so Sunday. Sold out — resale.",
-   members:[m("You","you"),m("Faisal","in"),m("Khalid","in"),m("Majed","in"),m("Turki","pending"),m("Ziyad","pending")]},
- {id:"nye",mon:"Dec",d:"Thu 31 Dec",t:"New Year's Eve concert",venue:"To be announced",emo:"🎆",img:null,price:0,group:"Everyone",state:"notify",why:"Not announced yet. We'll alert you first."},
- {id:"afc",mon:"Jan",d:"Thu 7 Jan",t:"AFC Asian Cup opener",venue:"King Fahd Sports City",emo:"⚽",img:null,price:120,group:"The Boys",state:"booked",why:"All 6 in. Booked early before it sold out.",
-   members:[m("You","you",1),m("Faisal","in",1),m("Khalid","in",1),m("Majed","in",1),m("Turki","in",1),m("Ziyad","in",1)]},
- {id:"via",mon:"Jan",d:"Fri 15 Jan",t:"VIA Riyadh · film & dinner",venue:"VOX + Gymkhana",emo:"🎬",img:"via.jpg",price:120,group:"Date Night",state:"ready",why:"Date night. Just the two of you.",
-   members:[m("You","you",1),m("Partner","in",1)]},
- {id:"tarab",mon:"Jan",d:"Sat 23 Jan",t:"Tarab night — join a table",venue:"The Groves",emo:"🪑",img:null,price:150,group:"New people",state:"match",why:"Friends busy. Match with people who share your taste."},
- {id:"afc-final",mon:"Feb",d:"Fri 5 Feb",t:"AFC Asian Cup Final",venue:"King Fahd Sports City",emo:"🏆",img:null,price:0,group:"The Boys",state:"notify",why:"The last big weekend. Register interest now."},
- {id:"ethno",mon:"Feb",d:"Fri 12 Feb",t:"Ethnosport closing",venue:"Heritage grounds",emo:"🏇",img:"ethnosport.jpg",price:60,group:"Family",state:"ready",why:"Heritage night with the family. All 4 free.",
-   members:[m("You","you",1),m("Dana","pending"),m("Reem","in"),m("Hind","pending")]}
+ {id:"blvd-open",mon:"Nov",d:"Sat 28 Nov",t:"Boulevard World opening",venue:"Boulevard World",emo:"🌍",img:"blvd-world.jpg",price:30,state:"booked",why:"Season's open — you're going."},
+ {id:"crown",mon:"Nov",d:"Fri 20 Nov",t:"WWE Crown Jewel",venue:"Kingdom Arena",emo:"🤼",img:"crown-jewel.jpg",price:180,state:"sold",ev:"crown-jewel",why:"Sold out at face value — resale found."},
+ {id:"toy",mon:"Dec",d:"Fri 4 Dec",t:"The Toy Shop",venue:"Global Theater, BLVD City",emo:"🎭",img:"toy-shop.jpg",price:80,state:"ready",why:"The kids said yes — a great family outing."},
+ {id:"ommda",mon:"Dec",d:"Sat 12 Dec",t:"Al Ommda + Farmers Market",venue:"BLVD City Theater",emo:"😂",img:"al-ommda.jpg",price:90,state:"ready",why:"Comedy night, then food."},
+ {id:"six",mon:"Dec",d:"Sun 27 Dec",t:"Six Kings Slam",venue:"The Venue",emo:"🎾",img:"six-kings.jpg",price:200,state:"sold",ev:"six-kings",why:"Sunday works best. Sold out — resale."},
+ {id:"nye",mon:"Dec",d:"Thu 31 Dec",t:"New Year's Eve concert",venue:"To be announced",emo:"🎆",img:null,price:0,state:"notify",why:"Not announced yet. We'll alert you first."},
+ {id:"afc",mon:"Jan",d:"Thu 7 Jan",t:"AFC Asian Cup opener",venue:"King Fahd Sports City",emo:"⚽",img:null,price:120,state:"booked",why:"Booked early before it sold out."},
+ {id:"via",mon:"Jan",d:"Fri 15 Jan",t:"VIA Riyadh · film & dinner",venue:"VOX + Gymkhana",emo:"🎬",img:"via.jpg",price:120,state:"ready",why:"Date night — VOX + dinner."},
+ {id:"tarab",mon:"Jan",d:"Sat 23 Jan",t:"Tarab night — join a table",venue:"The Groves",emo:"🪑",img:null,price:150,state:"match",why:"Match with people who share your taste."},
+ {id:"afc-final",mon:"Feb",d:"Fri 5 Feb",t:"AFC Asian Cup Final",venue:"King Fahd Sports City",emo:"🏆",img:null,price:0,state:"notify",why:"The last big weekend. Register interest now."},
+ {id:"ethno",mon:"Feb",d:"Fri 12 Feb",t:"Ethnosport closing",venue:"Heritage grounds",emo:"🏇",img:"ethnosport.jpg",price:60,state:"ready",why:"Heritage night out."}
 ];
 function outing(id){for(var i=0;i<OUTINGS.length;i++)if(OUTINGS[i].id===id)return OUTINGS[i];return null;}
 var curOuting=null, payMode='own';
@@ -761,19 +759,25 @@ function renderWho(){var w=document.getElementById('whoWrap');w.innerHTML='';var
 function setName(v){USER_NAME=v||"You";document.getElementById('meAv').textContent=initials(USER_NAME);}
 function renderCircles(){
   var w=document.getElementById('circles');w.innerHTML='';
+  if(!CIRCLES.length){
+    var e=document.createElement('div');e.className='circle';e.style.cssText='display:block;cursor:pointer';
+    e.innerHTML='<div class="nm">No circles yet</div><div class="sub">Create one and add people from your contacts or webook. You’ll invite a circle to each outing.</div>';
+    e.onclick=function(){newCircle();};w.appendChild(e);return;
+  }
   CIRCLES.forEach(function(c){
     var mem=c.members;
     var avs='<span class="av" style="background:#ff6ba8">'+initials(USER_NAME)+'</span>'+mem.slice(0,3).map(function(x){return '<span class="av" style="background:'+(COLORS[x.nm]||'#8be0ff')+'">'+x.nm.slice(0,2).toUpperCase()+'</span>';}).join('');
     if(mem.length>3)avs+='<span class="av more">+</span>';
-    var joined=mem.filter(function(x){return x.st==='member';}).length+1;
     var el=document.createElement('div');el.className='circle';el.style.cursor='pointer';
-    el.innerHTML='<div><div class="nm">'+c.nm+'</div><div class="sub">'+joined+' of '+(mem.length+1)+' joined · tap to manage</div></div><div class="avs">'+avs+'</div>';
+    el.innerHTML='<div><div class="nm">'+c.nm+'</div><div class="sub">'+(mem.length+1)+' members · tap to manage</div></div><div class="avs">'+avs+'</div>';
     el.onclick=(function(id){return function(){openCircle(id);};})(c.id);
     w.appendChild(el);
   });
 }
-function openCircle(id){for(var i=0;i<CIRCLES.length;i++)if(CIRCLES[i].id===id){curCircle=CIRCLES[i];break;}renderCircle();go('circle');}
-function newCircle(){var c={id:'c'+Date.now(),nm:'New circle',members:[]};CIRCLES.push(c);curCircle=c;renderCircle();go('circle');setTimeout(function(){var el=document.getElementById('circName');if(el){el.focus();el.select();}},60);}
+function openCircle(id){_returnOuting=null;for(var i=0;i<CIRCLES.length;i++)if(CIRCLES[i].id===id){curCircle=CIRCLES[i];break;}renderCircle();go('circle');}
+function newCircle(){_returnOuting=null;var c={id:'c'+Date.now(),nm:'New circle',members:[]};CIRCLES.push(c);curCircle=c;renderCircle();go('circle');setTimeout(function(){var el=document.getElementById('circName');if(el){el.focus();el.select();}},60);}
+function newCircleFor(){var o=curOuting;newCircle();_returnOuting=o;}
+function circleDone(){var r=_returnOuting;_returnOuting=null;if(r){if(curCircle&&curCircle.members.length)setOutingCircle(r,curCircle.id);openOuting(r);}else{go('timeline');}}
 function setCircleName(v){curCircle.nm=v||'Circle';document.getElementById('circAv').textContent=(v||'C').slice(0,2).toUpperCase();}
 function renderCircle(){
   var c=curCircle,mem=c.members;
@@ -785,16 +789,34 @@ function renderCircle(){
   document.getElementById('circMembers').innerHTML=h;
   var s=document.getElementById('circSearch');if(s)s.value='';
   document.getElementById('searchResults').innerHTML='';
+  renderContacts();
 }
+function renderContacts(){
+  var w=document.getElementById('contactsList');if(!w)return;
+  var have=curCircle.members.map(function(x){return x.nm.toLowerCase();});
+  w.innerHTML=CONTACTS.map(function(ct){
+    var added=have.indexOf(ct.nm.toLowerCase())>=0;
+    var right,badge;
+    if(ct.onWebook){badge='<span style="color:#4ade80;font-weight:700">✓ on webook</span>';right=added?'<span class="st in">Added</span>':'<button class="addbtn" onclick="addContact(\''+ct.nm+'\')">Add</button>';}
+    else{badge='<span style="color:var(--mut2)">not on webook</span>';right='<button class="newbtn" onclick="toast(\'Invite link sent to '+ct.nm+'\')">Invite</button>';}
+    return '<div class="sresult"><span class="av" style="background:'+(COLORS[ct.nm]||'#8be0ff')+'">'+ct.nm.slice(0,2).toUpperCase()+'</span><div class="nm"><b>'+ct.nm+'</b><small>'+ct.ph+' · '+badge+'</small></div>'+right+'</div>';
+  }).join('');
+}
+function addContact(nm){curCircle.members.push({nm:nm,st:'member'});renderCircle();toast('Added '+nm+' — matched on webook ✓');}
 function circleSearch(q){
   var box=document.getElementById('searchResults');q=(q||'').trim().toLowerCase();
   if(!q){box.innerHTML='';return;}
   var have=curCircle.members.map(function(x){return x.nm.toLowerCase();});
   var res=WEBOOK_USERS.filter(function(u){return have.indexOf(u.nm.toLowerCase())<0 && (u.nm.toLowerCase().indexOf(q)>=0||u.h.toLowerCase().indexOf(q)>=0);}).slice(0,6);
-  if(!res.length){box.innerHTML='<div class="src" style="color:var(--mut);padding:10px 2px">No webook user found — invite them by link below.</div>';return;}
+  if(!res.length){box.innerHTML='<div class="src" style="color:var(--mut);padding:10px 2px">No webook user found — add them from your contacts above, or invite by link.</div>';return;}
   box.innerHTML=res.map(function(u){return '<div class="sresult"><span class="av" style="background:'+(COLORS[u.nm]||'#8be0ff')+'">'+u.nm.slice(0,2).toUpperCase()+'</span><div class="nm"><b>'+u.nm+'</b><small>'+u.h+' · on webook</small></div><button class="addbtn" onclick="addToCircle(\''+u.nm+'\')">Add</button></div>';}).join('');
 }
 function addToCircle(nm){curCircle.members.push({nm:nm,st:'invited'});renderCircle();toast('Invited '+nm+' — webook notification + WhatsApp sent ✓');}
+/* per-outing circle choice */
+function circleById(id){for(var i=0;i<CIRCLES.length;i++)if(CIRCLES[i].id===id)return CIRCLES[i];return null;}
+function circleToMembers(c){var list=[m("You","you",0)];c.members.forEach(function(x){list.push(m(x.nm,"in",0));});return list;}
+function setOutingCircle(o,id){var c=circleById(id);if(!c)return;o.chosenId=id;o.group=c.nm;o.members=circleToMembers(c);}
+function pickCircle(id){setOutingCircle(curOuting,id);renderOuting();}
 
 /* ===== timeline ===== */
 function thumbHtml(o,cls){return o.img?'<div class="'+cls+' photo" style="background-image:url(\''+o.img+'\')"></div>':'<div class="'+cls+'" style="background:linear-gradient(135deg,#2a1248,#0c0716)">'+o.emo+'</div>';}
@@ -807,7 +829,7 @@ function renderTimeline(){
     items.forEach(function(o){
       var tg=TAGS[o.state]||["ready","Plan"];
       var el=document.createElement('div');el.className='itcard tap';
-      el.innerHTML=thumbHtml(o,'thumb')+'<div class="c"><div class="d">'+o.d+'</div><h3>'+o.t+'</h3><div class="why">'+o.why+'</div><div class="ft"><span class="tag '+tg[0]+'">'+tg[1]+'</span><span class="circ-lab">'+o.group+'</span></div></div>';
+      el.innerHTML=thumbHtml(o,'thumb')+'<div class="c"><div class="d">'+o.d+'</div><h3>'+o.t+'</h3><div class="why">'+o.why+'</div><div class="ft"><span class="tag '+tg[0]+'">'+tg[1]+'</span></div></div>';
       el.onclick=function(){openOuting(o);};w.appendChild(el);
     });
   });
@@ -834,39 +856,43 @@ function renderOuting(){
   document.getElementById('oTh').outerHTML='<div class="th" id="oTh">'+o.emo+'</div>';
   var th=document.getElementById('oTh');
   if(o.img){th.className='th photo';th.style.backgroundImage="url('"+o.img+"')";th.textContent='';}
-  document.getElementById('oLab').textContent=o.group+' · '+o.d+' · '+o.venue;
+  document.getElementById('oLab').textContent=o.d+' · '+o.venue;
   document.getElementById('oTitle').textContent=o.t;
   var body=document.getElementById('oBody'),bar=document.getElementById('oBar');
   if(o.state==='booked'){
-    body.innerHTML='<div class="badge g">✓ Booked — tickets in everyone’s wallet</div>'+
-      '<div class="proglab"><b>'+o.members.length+' of '+o.members.length+' going</b><span style="color:var(--mut)">all paid</span></div><div class="prog"><span style="width:100%"></span></div>'+
-      o.members.map(function(x){return memRow(x,'pay');}).join('');
-    bar.innerHTML='<button class="btn ghost" onclick="go(\'tracker\')">See who’s going →</button>';
+    body.innerHTML='<div class="badge g">✓ Booked — you’re going</div><div class="lead">Your e-ticket is in your webook wallet. '+o.why+'</div>';
+    bar.innerHTML='<button class="btn ghost" onclick="go(\'timeline\')">Back to my winter</button>';
   }else if(o.state==='sold'){
-    body.innerHTML='<div class="sob">⚠️ Sold out on webook — resale available</div>'+
-      '<div class="lead">'+o.members.filter(function(x){return x.status!=="pending";}).length+' of the group are in. Grab seats from verified fans on resell.webook.com.</div>'+
-      o.members.map(function(x){return memRow(x,'commit');}).join('');
+    body.innerHTML='<div class="sob">⚠️ Sold out on webook — resale available</div><div class="lead">Grab seats from verified fans on resell.webook.com, then invite a circle to join you.</div>';
     bar.innerHTML='<button class="btn resale" onclick="openResale(curOuting.ev)">Find resale tickets →</button>';
   }else if(o.state==='notify'){
     var on=!!notifyState[o.id];
     body.innerHTML='<div class="badge b">🔒 Not announced yet</div><div class="lead">We’re planning your whole winter — including the nights that haven’t dropped. Register interest and you’ll be first in.</div>';
-    bar.innerHTML='<button class="btn primary" id="oNotify" onclick="notifyOuting()">'+(on?'✓ Watching — you’ll be alerted':'🔔 Notify me when tickets drop')+'</button>';
+    bar.innerHTML='<button class="btn primary" onclick="notifyOuting()">'+(on?'✓ Watching — you’ll be alerted':'🔔 Notify me when tickets drop')+'</button>';
   }else if(o.state==='match'){
-    body.innerHTML='<div class="badge b">AI matching · opt-in</div><div class="lead">Your crew is busy this night. AI can seat you with people who genuinely share your taste — cross-checked against webook’s database.</div>';
+    body.innerHTML='<div class="badge b">AI matching · opt-in</div><div class="lead">Your circles are busy this night. AI can seat you with people who genuinely share your taste — cross-checked against webook’s database.</div>';
     bar.innerHTML='<button class="btn primary" onclick="openMatch()">Find my table →</button>';
   }else{ /* ready */
-    var inCount=o.members.filter(function(x){return x.status==="in"||x.status==="you";}).length;
-    var pct=Math.round(inCount/o.members.length*100);
+    if(!CIRCLES.length){
+      body.innerHTML='<div class="lead" style="margin-top:0">'+o.why+'</div><div class="handoff"><span class="wbk">👥 Invite a circle</span>You don’t have a circle yet. Create one — add people from your contacts or webook — then invite them to this outing.</div>';
+      bar.innerHTML='<button class="btn primary" onclick="newCircleFor()">+ Create a circle</button>';return;
+    }
+    var chips=CIRCLES.map(function(c){return '<button class="chip'+(c.id===o.chosenId?' on':'')+'" onclick="pickCircle(\''+c.id+'\')">'+c.nm+'</button>';}).join('')+'<button class="chip" onclick="newCircleFor()">+ New</button>';
+    var h='<div class="lead" style="margin-top:0">'+o.why+'</div><div class="subh" style="margin-top:4px">Invite which circle?</div><div class="chips" style="margin-bottom:10px">'+chips+'</div>';
+    var picked=o.chosenId?circleById(o.chosenId):null;
+    if(!picked){
+      body.innerHTML=h+'<div class="src" style="color:var(--mut)">Pick a circle to invite to this outing — or create a new one.</div>';
+      bar.innerHTML='<button class="btn primary" disabled>Book for the group →</button>';return;
+    }
+    var mem=o.members,inCount=mem.filter(function(x){return x.status==="in"||x.status==="you";}).length,pct=Math.round(inCount/mem.length*100);
     var link='webook.com/w/'+o.id+'-'+(1000+o.t.length);
-    body.innerHTML=
-      '<div class="invite"><div style="font-weight:800;font-size:15px">Invite '+o.group+' to join</div>'+
-        '<div class="msg">'+USER_NAME+': Let’s do <b>'+o.t+'</b> on '+o.d+'! Tap to join & grab your seat 👇<span class="lnk">'+link+'</span></div>'+
-        '<button class="btn wa" onclick="toast(\'Opening WhatsApp to '+o.group+'…\')">🟢 Invite on WhatsApp</button>'+
-        '<div class="row2" style="margin-top:8px"><button class="btn ghost" onclick="toast(\'Invite link copied\')">Copy link</button><button class="btn ghost" onclick="toast(\'Shared to '+o.group+'\')">Share</button></div>'+
-      '</div>'+
-      '<div class="proglab"><b>'+inCount+' of '+o.members.length+' in</b><span style="color:var(--mut)">'+o.group+'</span></div>'+
-      '<div class="prog"><span style="width:'+pct+'%"></span></div>'+
-      o.members.map(function(x){return memRow(x,'commit');}).join('');
+    h+='<div class="invite"><div style="font-weight:800;font-size:15px">Invite '+picked.nm+' to join</div>'+
+      '<div class="msg">'+USER_NAME+': Let’s do <b>'+o.t+'</b> on '+o.d+'! Tap to join & grab your seat 👇<span class="lnk">'+link+'</span></div>'+
+      '<button class="btn wa" onclick="toast(\'Opening WhatsApp to '+picked.nm+'…\')">🟢 Invite on WhatsApp</button>'+
+      '<div class="row2" style="margin-top:8px"><button class="btn ghost" onclick="toast(\'Invite link copied\')">Copy link</button><button class="btn ghost" onclick="toast(\'Shared to '+picked.nm+'\')">Share</button></div></div>'+
+      '<div class="proglab"><b>'+inCount+' of '+mem.length+' in</b><span style="color:var(--mut)">'+picked.nm+'</span></div><div class="prog"><span style="width:'+pct+'%"></span></div>'+
+      mem.map(function(x){return memRow(x,'commit');}).join('');
+    body.innerHTML=h;
     bar.innerHTML='<button class="btn primary" onclick="openBook()">Book for the group →</button>';
   }
 }
