@@ -330,7 +330,7 @@ button{font-family:inherit}
     <section class="screen active" data-s="swipe">
       <div class="body">
         <div class="h1">Swipe Riyadh Season</div>
-        <div class="lead" style="margin-bottom:8px">Drag a card — or tap ✓ ? ✕ below. 16 to go, no limit.</div>
+        <div class="lead" style="margin-bottom:8px" id="swipeLead">Drag a card — or tap ✓ ? ✕ below. No limit.</div>
         <div class="chips" id="catchips"></div>
         <div class="deck" id="deck">
           <div class="empty">
@@ -438,7 +438,20 @@ button{font-family:inherit}
         <div class="lead">Your whole season, Nov–Feb. Tap any plan to invite the group and book.</div>
         <div id="timelineList"></div>
       </div>
-      <div class="actionbar"><button class="btn primary" onclick="toast('Shared your winter with your circles 🎉')">Share my whole winter</button></div>
+      <div class="actionbar"><button class="btn primary" onclick="go('share')">📤 Send my winter to my circles</button></div>
+    </section>
+
+    <!-- 4b SHARE WHOLE PLAN -->
+    <section class="screen" data-s="share">
+      <div class="body">
+        <div class="backlink" onclick="go('timeline')">‹ Back to your winter</div>
+        <div class="h1">Send your winter to your circles</div>
+        <div class="lead">Share the whole Nov–Feb plan at once. Each circle gets a webook notification + a WhatsApp nudge to open it and RSVP to the outings that suit them.</div>
+        <div class="handoff"><span class="wbk">🗓️ What they'll get</span>Your full plan — <b id="sharePlanCount">11</b> outings across Nov–Feb — opens in webook. They tap any plan to join the ones they're free for.</div>
+        <div class="subh">Choose circles</div>
+        <div id="shareCircles"></div>
+      </div>
+      <div class="actionbar"><button class="btn primary" id="shareBtn" onclick="doShare()">Send to all circles</button></div>
     </section>
 
     <!-- 5 OUTING (invite + commit, mapped) -->
@@ -621,16 +634,24 @@ var EVENTS=[
  {id:"wonder",t:"Wonder Garden",cat:"Zones",when:"From Nov",venue:"Boulevard City",price:"From SAR 50",emo:"🌸",g:"linear-gradient(135deg,#3a1540,#130815)",demand:"ok",fr:"4 friends said yes"},
  {id:"toy-shop",t:"The Toy Shop",cat:"Shows",when:"Nov",venue:"Global Theater, BLVD City",price:"From SAR 80",emo:"🎭",g:"linear-gradient(135deg,#3a1555,#140a20)",demand:"ok",fr:"Family said yes"},
  {id:"al-ommda",t:"Al Ommda",cat:"Shows",when:"Dec",venue:"BLVD City Theater",price:"From SAR 90",emo:"😂",g:"linear-gradient(135deg,#2a1248,#0c0716)",demand:"ok",fr:"2 friends said yes"},
- {id:"groves",t:"The Groves · 5 Years",cat:"Dining",when:"From Nov",venue:"Themed restaurants",price:"Pay at venue",emo:"🍽️",g:"linear-gradient(135deg,#113a2e,#0a1f18)",demand:"ok",fr:"Work crew said yes"},
+ {id:"groves",t:"The Groves · 5 Years",cat:"Restaurants",when:"From Nov",venue:"Themed restaurants",price:"Pay at venue",emo:"🍽️",g:"linear-gradient(135deg,#113a2e,#0a1f18)",demand:"ok",fr:"Work crew said yes"},
  {id:"ethnosport",t:"Ethnosport Festival",cat:"Culture",when:"Nov",venue:"Heritage grounds",price:"From SAR 60",emo:"🏇",g:"linear-gradient(135deg,#3a2a10,#140f06)",demand:"ok",fr:"3 friends said yes"},
  {id:"via",t:"VIA Riyadh · Film & Dinner",cat:"Zones",when:"All season",venue:"VOX + fine dining",price:"From SAR 120",emo:"🎬",g:"linear-gradient(135deg,#231233,#0c0716)",demand:"ok",fr:"Date night"},
- {id:"farmers",t:"Farmers Market",cat:"Dining",when:"From Dec",venue:"Farm-to-table",price:"From SAR 40",emo:"🥐",g:"linear-gradient(135deg,#4a3312,#160f06)",demand:"ok",fr:"3 friends said yes"},
+ {id:"farmers",t:"Farmers Market",cat:"Restaurants",when:"From Dec",venue:"Farm-to-table",price:"From SAR 40",emo:"🥐",g:"linear-gradient(135deg,#4a3312,#160f06)",demand:"ok",fr:"3 friends said yes"},
  {id:"formula-e",t:"Formula E Karting",cat:"Experiences",when:"All season",venue:"SEVEN AlHamra",price:"From SAR 110",emo:"🏎️",g:"linear-gradient(135deg,#102a3a,#0a1620)",demand:"ok",fr:"The Boys said yes"},
+ {id:"pier",t:"BLVD Pier rides",cat:"Experiences",when:"All season",venue:"Boulevard World",price:"From SAR 90",emo:"🎢",g:"linear-gradient(135deg,#2a1248,#0c0716)",demand:"hot",fr:"Thrill-seekers said yes"},
+ {id:"zodiac",t:"Zodiac Garden · The Groves",cat:"Restaurants",when:"From Nov",venue:"The Groves",price:"Italian-Japanese",emo:"🍱",g:"linear-gradient(135deg,#1c2a4a,#0a1020)",demand:"ok",fr:"Date-night pick"},
+ {id:"gymkhana",t:"Gymkhana · VIA Riyadh",cat:"Restaurants",when:"All season",venue:"VIA Riyadh",price:"Michelin · Indian",emo:"🍛",g:"linear-gradient(135deg,#3a2410,#140d06)",demand:"ok",fr:"Foodies said yes"},
+ {id:"cutco",t:"CUT & Co · VIA Riyadh",cat:"Restaurants",when:"All season",venue:"VIA Riyadh",price:"Steakhouse",emo:"🥩",g:"linear-gradient(135deg,#3a1212,#140707)",demand:"ok",fr:"Work crew said yes"},
+ {id:"cocomelon",t:"CoComelon Playdate",cat:"Kids",when:"All season",venue:"Boulevard City",price:"From SAR 60",emo:"🎵",g:"linear-gradient(135deg,#2a1a4a,#0e0a1e)",demand:"ok",fr:"Kids love it"},
+ {id:"dolphin",t:"BLVD Dolphinarium",cat:"Kids",when:"All season",venue:"Boulevard World",price:"From SAR 70",emo:"🐬",g:"linear-gradient(135deg,#102a4a,#0a1424)",demand:"ok",fr:"Family said yes"},
+ {id:"zoo",t:"Riyadh Zoo · Giraffe",cat:"Kids",when:"All season",venue:"Riyadh Zoo",price:"From SAR 50",emo:"🦒",g:"linear-gradient(135deg,#2a3a12,#121806)",demand:"ok",fr:"Family said yes"},
+ {id:"peekaboo",t:"Peekaboo · ages 0–5",cat:"Kids",when:"From Nov",venue:"Wonder Garden",price:"From SAR 40",emo:"🧸",g:"linear-gradient(135deg,#3a1540,#140815)",demand:"ok",fr:"Little ones said yes"},
  {id:"abu-bakr",t:"Abu Bakr Salem Stage",cat:"Concerts",when:"Headliner TBA",venue:"BLVD City",price:"Coming soon",emo:"🎤",g:"linear-gradient(135deg,#4a0f2e,#140610)",demand:"soon",fr:"Lineup drops soon"},
  {id:"nye",t:"New Year's Eve concert",cat:"Concerts",when:"31 Dec · TBA",venue:"To be announced",price:"Coming soon",emo:"🎆",g:"linear-gradient(135deg,#1c1240,#0a0716)",demand:"soon",fr:"Always sells fast"}
 ];
-var IMG={"six-kings":"six-kings.jpg","crown-jewel":"crown-jewel.jpg","ufc":"ufc.jpg","canelo":"canelo.jpg","blvd-world":"blvd-world.jpg","wonder":"wonder.jpg","toy-shop":"toy-shop.jpg","al-ommda":"al-ommda.jpg","groves":"groves.jpg","ethnosport":"ethnosport.jpg","via":"via.jpg","farmers":"farmers.jpg","formula-e":"formula-e.jpg","abu-bakr":"abu-bakr.jpg"};
-var CATS=["All","Sports","Concerts","Zones","Shows","Dining","Culture","Experiences"];
+var IMG={"six-kings":"six-kings.jpg","crown-jewel":"crown-jewel.jpg","ufc":"ufc.jpg","canelo":"canelo.jpg","blvd-world":"blvd-world.jpg","wonder":"wonder.jpg","toy-shop":"toy-shop.jpg","al-ommda":"al-ommda.jpg","groves":"groves.jpg","ethnosport":"ethnosport.jpg","via":"via.jpg","farmers":"farmers.jpg","formula-e":"formula-e.jpg","abu-bakr":"abu-bakr.jpg","pier":"pier.jpg","zodiac":"zodiac.jpg","gymkhana":"gymkhana.jpg","cutco":"cutco.jpg","cocomelon":"cocomelon.jpg","dolphin":"dolphin.jpg","zoo":"zoo.jpg","peekaboo":"peekaboo.jpg"};
+var CATS=["All","Sports","Concerts","Restaurants","Kids","Zones","Shows","Experiences","Culture"];
 
 /* ===== identity ===== */
 var USER_NAME="Omar";
@@ -835,6 +856,32 @@ function renderTimeline(){
   });
 }
 
+/* ===== share whole plan to circles ===== */
+var shareSel={};
+function renderShare(){
+  document.getElementById('sharePlanCount').textContent=OUTINGS.length;
+  var w=document.getElementById('shareCircles');w.innerHTML='';var b=document.getElementById('shareBtn');
+  if(!CIRCLES.length){
+    w.innerHTML='<div class="handoff" style="background:rgba(236,31,130,.07);border-color:rgba(236,31,130,.3);color:#f0c9df">You don’t have any circles yet. Create one first, then share your winter with them.</div>';
+    b.textContent='Create a circle';b.disabled=false;b.onclick=function(){newCircle();};return;
+  }
+  CIRCLES.forEach(function(c){
+    if(shareSel[c.id]===undefined)shareSel[c.id]=true;
+    var on=shareSel[c.id];
+    var el=document.createElement('div');el.className='circle';el.style.cursor='pointer';el.style.borderColor=on?'var(--pink)':'var(--line)';
+    el.innerHTML='<div><div class="nm">'+c.nm+'</div><div class="sub">'+(c.members.length+1)+' members</div></div><span class="st '+(on?'in':'pending')+'">'+(on?'✓ Selected':'Off')+'</span>';
+    el.onclick=(function(id){return function(){shareSel[id]=!shareSel[id];renderShare();};})(c.id);
+    w.appendChild(el);
+  });
+  var n=CIRCLES.filter(function(c){return shareSel[c.id];}).length;
+  b.onclick=doShare;b.disabled=!n;b.textContent=n?('Send to '+n+' circle'+(n>1?'s':'')+' →'):'Pick a circle';
+}
+function doShare(){
+  var sel=CIRCLES.filter(function(c){return shareSel[c.id];});if(!sel.length)return;
+  confetti();toast('Winter plan sent to '+sel.map(function(c){return c.nm;}).join(', ')+' — webook + WhatsApp ✓');
+  setTimeout(function(){go('timeline');},1600);
+}
+
 /* ===== outing (invite + commit, mapped) ===== */
 function openOuting(o){curOuting=o;renderOuting();go('outing');}
 function openOutingById(id){var o=outing(id);if(o)openOuting(o);}
@@ -1014,8 +1061,8 @@ function renderNotify(){var w=document.getElementById('notifyList');w.innerHTML=
 function toggleNotify(id){notifyState[id]=!notifyState[id];renderNotify();toast(notifyState[id]?"Added to watch-list — you'll get 24h early access":"Removed from watch-list");}
 
 /* ===== nav / ui ===== */
-var STEP={swipe:"Step 1 of 4",free:"Step 2 of 4",you:"Step 3 of 4",circle:"Manage circle",timeline:"Step 4 of 4",outing:"Your plan",book:"Checkout",payown:"Everyone pays own",tracker:"Payment tracker",match:"AI matching",blind:"Your table",resale:"Sold out → resale",notify:"Plan ahead"};
-function go(id){closeMenu();[].slice.call(document.querySelectorAll('.screen')).forEach(function(s){s.classList.toggle('active',s.dataset.s===id);});document.getElementById('step').textContent=STEP[id]||'';var b=document.querySelector('.screen.active .body');if(b)b.scrollTop=0;if(id==='notify')renderNotify();if(id==='tracker')renderTracker();if(id==='you')renderCircles();}
+var STEP={swipe:"Step 1 of 4",free:"Step 2 of 4",you:"Step 3 of 4",circle:"Manage circle",timeline:"Step 4 of 4",share:"Share your winter",outing:"Your plan",book:"Checkout",payown:"Everyone pays own",tracker:"Payment tracker",match:"AI matching",blind:"Your table",resale:"Sold out → resale",notify:"Plan ahead"};
+function go(id){closeMenu();[].slice.call(document.querySelectorAll('.screen')).forEach(function(s){s.classList.toggle('active',s.dataset.s===id);});document.getElementById('step').textContent=STEP[id]||'';var b=document.querySelector('.screen.active .body');if(b)b.scrollTop=0;if(id==='notify')renderNotify();if(id==='tracker')renderTracker();if(id==='you')renderCircles();if(id==='share')renderShare();}
 function openMenu(){document.getElementById('sheet').classList.add('show');}
 function closeMenu(){document.getElementById('sheet').classList.remove('show');}
 var tT;
@@ -1024,6 +1071,7 @@ function confetti(){var w=document.getElementById('confetti');var cs=['#ec1f82',
 
 /* init */
 (function(){var dk=document.getElementById('deck');dk.addEventListener('pointerdown',deckDown);window.addEventListener('pointermove',deckMove);window.addEventListener('pointerup',deckEnd);window.addEventListener('pointercancel',deckEnd);})();
+document.getElementById('swipeLead').textContent='Drag a card — or tap ✓ ? ✕ below. '+EVENTS.length+' to swipe, no limit.';
 renderCats();buildDeck();
 renderMtabs();renderCal();renderWho();
 setName('Omar');renderCircles();
