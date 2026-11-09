@@ -1011,7 +1011,7 @@ function renderCircles(){
 function openCircle(id){_returnOuting=null;for(var i=0;i<CIRCLES.length;i++)if(CIRCLES[i].id===id){curCircle=CIRCLES[i];break;}renderCircle();go('circle');}
 function newCircle(){_returnOuting=null;var c={id:'c'+Date.now(),nm:'New circle',members:[]};CIRCLES.push(c);curCircle=c;renderCircle();go('circle');setTimeout(function(){var el=document.getElementById('circName');if(el){el.focus();el.select();}},60);}
 function newCircleFor(){var o=curOuting;newCircle();_returnOuting=o;}
-function circleDone(){var r=_returnOuting;_returnOuting=null;if(r){if(curCircle&&curCircle.members.length)setOutingCircle(r,curCircle.id);openOuting(r);}else{go('timeline');}}
+function circleDone(){var r=_returnOuting;_returnOuting=null;if(r){if(curCircle&&curCircle.members.length)setOutingCircle(r,curCircle.id);openOuting(r);}else{renderCircles();go('you');}}
 function setCircleName(v){curCircle.nm=v||'Circle';document.getElementById('circAv').textContent=(v||'C').slice(0,2).toUpperCase();}
 function renderCircle(){
   var c=curCircle,mem=c.members;
