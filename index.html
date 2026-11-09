@@ -894,11 +894,11 @@ var OUTINGS=[
  {id:"toy",mon:"Dec",d:"Fri 4 Dec",t:"The Toy Shop",venue:"Global Theater, BLVD City",emo:"🎭",img:"toy-shop.jpg",price:80,state:"ready",why:"The kids said yes — a great family outing."},
  {id:"ommda",mon:"Dec",d:"Sat 12 Dec",t:"Al Ommda + Farmers Market",venue:"BLVD City Theater",emo:"😂",img:"al-ommda.jpg",price:90,state:"ready",why:"Comedy night, then food."},
  {id:"six",mon:"Dec",d:"Sun 27 Dec",t:"Six Kings Slam",venue:"The Venue",emo:"🎾",img:"six-kings.jpg",price:200,state:"sold",ev:"six-kings",why:"Sunday works best. Sold out — resale."},
- {id:"nye",mon:"Dec",d:"Thu 31 Dec",t:"New Year's Eve concert",venue:"To be announced",emo:"🎆",img:null,price:0,state:"notify",why:"Not announced yet. We'll alert you first."},
- {id:"afc",mon:"Jan",d:"Thu 7 Jan",t:"AFC Asian Cup — Saudi v Palestine",venue:"King Fahd Sports City",emo:"⚽",img:null,price:120,state:"booked",why:"The opener. All 6 in — booked early."},
+ {id:"nye",mon:"Dec",d:"Thu 31 Dec",t:"New Year's Eve concert",venue:"To be announced",emo:"🎆",img:"nye.jpg",price:0,state:"notify",why:"Not announced yet. We'll alert you first."},
+ {id:"afc",mon:"Jan",d:"Thu 7 Jan",t:"AFC Asian Cup — Saudi v Palestine",venue:"King Fahd Sports City",emo:"⚽",img:"afc.jpg",price:120,state:"booked",why:"The opener. All 6 in — booked early."},
  {id:"via",mon:"Jan",d:"Fri 15 Jan",t:"VIA Riyadh · film & dinner",venue:"VOX + Gymkhana",emo:"🎬",img:"via.jpg",price:120,state:"ready",why:"Date night — VOX + dinner."},
- {id:"tarab",mon:"Jan",d:"Sat 23 Jan",t:"Tarab night — join a table",venue:"The Groves",emo:"🪑",img:null,price:150,state:"match",why:"Match with people who share your taste."},
- {id:"afc-final",mon:"Feb",d:"Fri 5 Feb",t:"AFC Asian Cup Final",venue:"King Fahd Sports City",emo:"🏆",img:null,price:0,state:"notify",why:"The last big weekend. Register interest now."},
+ {id:"tarab",mon:"Jan",d:"Sat 23 Jan",t:"Tarab night — join a table",venue:"The Groves",emo:"🪑",img:"groves.jpg",price:150,state:"match",why:"Match with people who share your taste."},
+ {id:"afc-final",mon:"Feb",d:"Fri 5 Feb",t:"AFC Asian Cup Final",venue:"King Fahd Sports City",emo:"🏆",img:"afc.jpg",price:0,state:"notify",why:"The last big weekend. Register interest now."},
  {id:"ethno",mon:"Feb",d:"Fri 12 Feb",t:"Ethnosport closing",venue:"Heritage grounds",emo:"🏇",img:"ethnosport.jpg",price:60,state:"ready",why:"Heritage night out."}
 ];
 function outing(id){for(var i=0;i<OUTINGS.length;i++)if(OUTINGS[i].id===id)return OUTINGS[i];return null;}
@@ -938,9 +938,9 @@ var RESALE={
 
 /* ===== NOTIFY ===== */
 var NOTIFY=[
- {id:"abu-bakr",t:"Abu Bakr Salem Stage",sub:"Concert series · headliner lineup TBA",emo:"🎤",g:"linear-gradient(135deg,#4a0f2e,#140610)"},
- {id:"nye",t:"New Year's Eve concert",sub:"31 Dec · artist to be announced",emo:"🎆",g:"linear-gradient(135deg,#1c1240,#0a0716)"},
- {id:"afc-final",t:"AFC Asian Cup — knockouts",sub:"Feb · match dates not released",emo:"🏆",g:"linear-gradient(135deg,#113a2e,#08140f)"},
+ {id:"abu-bakr",t:"Abu Bakr Salem Stage",sub:"Concert series · headliner lineup TBA",emo:"🎤",img:"abu-bakr.jpg",g:"linear-gradient(135deg,#4a0f2e,#140610)"},
+ {id:"nye",t:"New Year's Eve concert",sub:"31 Dec · artist to be announced",emo:"🎆",img:"nye.jpg",g:"linear-gradient(135deg,#1c1240,#0a0716)"},
+ {id:"afc-final",t:"AFC Asian Cup — knockouts",sub:"Feb · match dates not released",emo:"🏆",img:"afc.jpg",g:"linear-gradient(135deg,#113a2e,#08140f)"},
  {id:"comedy",t:"Winter comedy headliner",sub:"BLVD City Theater · surprise act",emo:"🎙️",g:"linear-gradient(135deg,#2a1248,#0c0716)"}
 ];
 var notifyState={};
@@ -1339,7 +1339,7 @@ function openTogether(name){
 function doTogether(){confetti();toast('Booked — going to '+tgO.t+' with '+tgName+'. Chat unlocked 🎉');setTimeout(function(){go('timeline');},1800);}
 
 /* ===== notify screen ===== */
-function renderNotify(){var w=document.getElementById('notifyList');w.innerHTML='';NOTIFY.forEach(function(nn){var on=!!notifyState[nn.id];var el=document.createElement('div');el.className='ncard'+(on?' on':'');el.innerHTML='<div class="th" style="background:'+nn.g+'">'+nn.emo+'<span class="lock">🔒</span></div><div class="c"><h3>'+nn.t+'</h3><div class="sub">'+nn.sub+'</div></div><button class="nbtn'+(on?' on':'')+'" id="nb-'+nn.id+'">'+(on?'✓ Watching':'🔔 Notify me')+'</button>';w.appendChild(el);el.querySelector('#nb-'+nn.id).onclick=function(e){e.stopPropagation();toggleNotify(nn.id);};});var cnt=Object.keys(notifyState).filter(function(k){return notifyState[k];}).length;document.getElementById('notifyCount').textContent=cnt;}
+function renderNotify(){var w=document.getElementById('notifyList');w.innerHTML='';NOTIFY.forEach(function(nn){var on=!!notifyState[nn.id];var el=document.createElement('div');el.className='ncard'+(on?' on':'');el.innerHTML=(nn.img?'<div class="th photo" style="background-image:url('+nn.img+')"><span class="lock">🔒</span></div>':'<div class="th" style="background:'+nn.g+'">'+nn.emo+'<span class="lock">🔒</span></div>')+'<div class="c"><h3>'+nn.t+'</h3><div class="sub">'+nn.sub+'</div></div><button class="nbtn'+(on?' on':'')+'" id="nb-'+nn.id+'">'+(on?'✓ Watching':'🔔 Notify me')+'</button>';w.appendChild(el);el.querySelector('#nb-'+nn.id).onclick=function(e){e.stopPropagation();toggleNotify(nn.id);};});var cnt=Object.keys(notifyState).filter(function(k){return notifyState[k];}).length;document.getElementById('notifyCount').textContent=cnt;}
 function toggleNotify(id){notifyState[id]=!notifyState[id];renderNotify();toast(notifyState[id]?"Added to watch-list — you'll get 24h early access":"Removed from watch-list");}
 
 /* ===== nav / ui ===== */
