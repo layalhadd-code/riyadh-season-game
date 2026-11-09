@@ -1148,14 +1148,14 @@ function renderOuting(){
   }else{ /* ready */
     if(!CIRCLES.length){
       body.innerHTML='<div class="lead" style="margin-top:0">'+o.why+'</div><div class="handoff"><span class="wbk">👥 Invite a circle</span>You don’t have a circle yet. Create one — add people from your contacts or webook — then invite them to this outing.</div>';
-      bar.innerHTML='<button class="btn primary" onclick="newCircleFor()">+ Create a circle</button><button class="btn ghost" style="margin-top:10px" onclick="openGoMatch()">🤝 Or match me with someone going</button>';return;
+      bar.innerHTML='<button class="btn primary" onclick="newCircleFor()">+ Create a circle</button><button class="btn ghost" style="margin-top:10px" onclick="openGoMatch()">🤝 Or match me with someone going</button>';appendAddon();return;
     }
     var chips=CIRCLES.map(function(c){return '<button class="chip'+(c.id===o.chosenId?' on':'')+'" onclick="pickCircle(\''+c.id+'\')">'+c.nm+'</button>';}).join('')+'<button class="chip" onclick="newCircleFor()">+ New</button>';
     var h='<div class="lead" style="margin-top:0">'+o.why+'</div><div class="subh" style="margin-top:4px">Invite which circle?</div><div class="chips" style="margin-bottom:10px">'+chips+'</div>';
     var picked=o.chosenId?circleById(o.chosenId):null;
     if(!picked){
       body.innerHTML=h+'<div class="src" style="color:var(--mut)">Pick a circle to invite to this outing — or create a new one.</div>';
-      bar.innerHTML='<button class="btn primary" disabled>Book for the group →</button>';return;
+      bar.innerHTML='<button class="btn primary" disabled>Book for the group →</button>';appendAddon();return;
     }
     var mem=o.members,going=mem.filter(function(x){return x.status==="in"||x.status==="you";}).length,pct=Math.round(going/mem.length*100);
     var link='webook.com/w/'+o.id+'-'+(1000+o.t.length);
@@ -1170,8 +1170,26 @@ function renderOuting(){
     body.innerHTML=h;
     bar.innerHTML='<button class="btn primary" onclick="openBook()">Book for the group →</button>';
   }
+  appendAddon();
 }
 function notifyOuting(){notifyState[curOuting.id]=!notifyState[curOuting.id];renderOuting();toast(notifyState[curOuting.id]?"Added to your watch-list — 24h early access":"Removed from watch-list");}
+function addonFor(o){
+  var t=(o.t+' '+o.venue).toLowerCase();
+  var dining=/via|tarab|grove|dinner|food|farmers|restaurant|dining|film/.test(t);
+  function pk(a){return a[(o.id.length+o.id.charCodeAt(o.id.length-1))%a.length];}
+  if(dining) return pk([
+    {name:'VOX Cinema · VIA Riyadh',pitch:'catch a film after dinner',price:'From SAR 45'},
+    {name:'Al Ommda · BLVD Theater',pitch:'add a comedy show to the night',price:'From SAR 90'}
+  ]);
+  return pk([
+    {name:'The Groves',pitch:'add dinner at The Groves before or after',price:'Pay at venue'},
+    {name:'Berenjak · VIA Riyadh',pitch:'grab dinner with the crew nearby',price:'Pay at venue'},
+    {name:'EL&N London',pitch:'dessert & coffee after — Insta-famous',price:'Café · desserts'}
+  ]);
+}
+function outingAddonHTML(){var a=addonFor(curOuting);var nm=a.name.split(' · ')[0];return '<div class="handoff" style="margin-top:12px;background:rgba(236,31,130,.09);border-color:rgba(236,31,130,.35);color:#ffd4e8"><span class="wbk" style="color:#ff86c0">✨ Make it a combo</span>Pair this with <b>'+a.name+'</b> — '+a.pitch+'. <span style="color:var(--mut)">'+a.price+'</span><button class="btn ghost" style="margin-top:9px" onclick="addAddon()">+ Add '+nm+' to the plan</button></div>';}
+function addAddon(){toast('Added to your combo — webook will prefill both bookings');}
+function appendAddon(){var b=document.getElementById('oBody');if(b&&curOuting)b.insertAdjacentHTML('beforeend',outingAddonHTML());}
 
 /* ===== book (mapped) ===== */
 var viaAdded=false;
