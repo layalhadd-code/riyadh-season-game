@@ -1,156 +1,175 @@
-# webook Winter Planner — Riyadh Season 2026-27
+# webook Winter Planner
 
-A mobile-first, swipe-to-plan prototype for **Riyadh Season 26-27**. The player swipes a deck of
-real RS events (right = like, left = skip, down = maybe), marks the nights they're free, and the
-"AI" assembles a **winter timeline** of outings. For each outing they invite a circle, get a
-resale fallback when it's sold out, register interest for nights that aren't live yet, get matched
-with a like-minded webook member when no circle is free, and add a **combo** (event + dinner,
-dining + movie). Booking hands the plan to webook with the date/session/tickets prefilled.
+A mobile-first clickable prototype. A member says what they are into and when they are free, and the
+planner builds a winter plan (Nov to Feb) from events they can actually book on webook: Riyadh
+Season 26-27 plus other live webook listings. They invite friends with a WhatsApp link, friends
+vote on the link, and the group books together.
 
-Built on the real **RS 26-27 booklet** artwork and webook branding (WBK logo, Gellix type, pink
-accent). This is a working front-end prototype for stakeholder demos.
+This is a front-end prototype for stakeholder demos and a reference for the real build. Version
+**V57**, 17 Nov 2026.
 
 - **Live site:** https://layalhadd-code.github.io/riyadh-season-game/
-- **Claude artifact (latest working version):** https://claude.ai/artifact/8PXM85pkwGmoDgRMQrZzMM — **private**, opens only for the owner / people it's shared with.
-- **Repo:** https://github.com/layalhadd-code/riyadh-season-game  *(repo still carries the old codename; the app is "webook Winter Planner")*
+- **Claude artifact (working copy):** https://claude.ai/artifact/8PXM85pkwGmoDgRMQrZzMM (private: opens only for the owner and people it is shared with)
+- **Repo:** https://github.com/layalhadd-code/riyadh-season-game (the repo keeps its old codename)
+- **Screen map:** an 11-page printable PDF of every screen for both users. Ask Layal for it.
 
-> 👋 **Handoff for Rawabi.** Start with the two ⚠️ callouts below. The short version: this prototype
-> **persists nothing** and the "AI matching" runs on a **synthetic pool**, not webook data — both
-> are front-end mocks by design. Where the data and the matching come from decides your whole
-> backend approach.
+> **Handoff for Rawabi.** Read "What is real and what is a stand-in" first. Nothing is saved, and
+> every other person in the demo is simulated except the two switchable members. The section
+> "How people are connected" is the part that decides the backend.
 
 ---
 
-## ⚠️ Read first — what's real vs mocked
+## The idea in one paragraph
 
-| Area | In the prototype | For a real pilot |
+Nobody is "the first user". Every member has **their own plan** and **the plans friends invited
+them to**, on one screen. Friends are connected by the share link, not by groups: there are no
+circles for friends. A circle exists in one place only, a gathering of new friends for a single
+event.
+
+## The journey (the same for everyone)
+
+1. **Cover.** Animated poster wall and four steps that explain the planner. If the member arrived
+   from a friend's link and has no plan yet, the cover says who invited them instead.
+2. **Interests** (step 1). Pick 3 to 5 of 17 interests, grouped in shelves. City filter and search.
+   Shows the webook bookings the planner already knows about.
+3. **Swipe** (step 2). Only bookable events from the chosen interests. Right is like, left is skip,
+   down is maybe, or use the three buttons. A two-second tutorial overlay shows on the first visit.
+4. **My Winter Calendar** (step 3). Free days of the week and best times of day.
+5. **Winter plans.** "Your plan" first, then every plan a friend invited you to. One opens at a time.
+   - Your plan: outings on real dates, each with the reason it was picked, plus friends' responses.
+   - A friend's plan: I'm in / Maybe / Can't on each outing.
+6. **Invite friends.** One link, sent to as many WhatsApp groups as the member likes.
+7. **Outing.** Who is in, change date, cancel, add a second event as a combo, find new friends.
+8. **Checkout.** The outing and anything added to it are in one cart. Pay your own seat (everyone
+   who voted in gets their own payment link, with a tracker) or pay for all.
+9. **Sold out.** The same Book button offers resale listings.
+10. **New friends.** Members already going to the event, with first name, age, gender, interests
+    and a match score. Invite several and it becomes a gathering, kept together as a circle.
+
+## What is real and what is a stand-in
+
+| Area | In the prototype | For production |
 | --- | --- | --- |
-| **Persistence** | None. All state is in-memory JS and **resets on refresh** (circles, swipes, RSVPs, bookings). | Add a backend + webook auth. Nothing is captured today. |
-| **AI matching** | Rule-based score over a **synthetic 8-person pool** (`POOL` + `scoreCandidate`). | Cross-check the real webook database (bookings, profile, taste). |
-| **Circles / contacts** | Created locally; WhatsApp invites and friends' RSVPs are **simulated**. | Real invites; guess webook accounts from hashed phone numbers (PDPL). |
-| **Booking / payment** | "Hand to webook" is a mock cart + payment-link UI; no money moves. | Real prefilled webook deep-links + pay-your-own split. |
-| **Resale** | Hard-coded sample listings (`RESALE`). | Live `resell.webook.com` inventory. |
-| **Catalogue** | 171 events **auto-parsed from the booklet PDF**; a few OCR-ish names, generic prices. | Data pass against the live bookable RS catalogue. |
+| **Persistence** | None. All state is in-memory JavaScript and resets on refresh. | webook sign-in and a store for profile, swipes, plans, invites, votes. |
+| **Catalogue** | 62 events (37 Riyadh Season, 25 other webook listings) taken from webook.com on 16 Nov 2026, with their official posters. | Live webook catalogue and availability. |
+| **Booking history** | Sample data (`HISTORY`). | The member's real webook orders. |
+| **Members** | Two switchable demo members, Omar (returning) and Sultan (new, invited by Omar). They are fully live against each other. | Real accounts. |
+| **Other friends** | Farrukh's and Yousef's plans are generated samples. Other friends' votes are simulated after a share. | Real invitees and votes. |
+| **WhatsApp** | A mock of WhatsApp's picker. | A normal share link. webook cannot read groups or replies, and cannot create a WhatsApp poll. |
+| **New friends** | An 8-person synthetic pool (`POOL`), rule-based score, simulated acceptances. | Matching over real members, with consent. |
+| **Booking and payment** | Mock cart, payment links and tracker. No money moves. | Prefilled webook carts and real per-person links. |
+| **Resale** | Hard-coded sample listings (`RESALE`). 6 Kings Slam is marked sold out on purpose to demo this path. | Live resell.webook.com inventory. |
 
----
+## How people are connected
+
+- The plan owner shares a link (`webook.com/w/<name>-winter`, or `/…/<eventId>` for one outing).
+- Opening the link while signed in records "this member was invited to this plan". That record is
+  what fills the invited member's plans list. No friend list, no groups.
+- Each vote is stored per plan, outing and member, and shows on the owner's plan.
+- If the invited member builds and shares their own plan, it appears in the first member's list the
+  same way.
+
+So the backend needs three things: a share token per plan, an invite record (plan, member), and a
+vote record (plan, outing, member, answer).
+
+## How the plan is built
+
+`tasteProfile()` turns signals into a weight per interest tag:
+
+- interest picked: +3
+- each webook booking: +2
+- swipe: like +2, maybe +1, skip −1.5
+
+`buildPlan()` scores every bookable event (`tasteScore` = sum of weights ÷ √number of tags), keeps
+what the member already booked, what they liked, strong maybes and a few unswiped picks that
+score well, then places each on a real date the event runs. It prefers the member's free days,
+spreads open-run events out, and avoids two outings on one day while the event has another date.
+Each outing carries a plain-language reason (`why`).
+
+## Rules the catalogue follows
+
+- Only events a member can book on webook on their own, each with its own official poster.
+- Real dates only. Fixed-date events use `on:[…]`; open runs use `run:[from,to]`.
+- No invented prices or venues. Where webook shows no price the text is "On webook.com".
+- An event with tickets on webook or on resale is shown the same way. An event with no tickets
+  anywhere is left out.
+- Interests are explicit tags on each event, not guessed from titles.
 
 ## Repo contents
-- **`index.html`** — the entire app in one file, no build step (~1,350 lines): every screen, the
-  flow logic, the 171-event catalogue, the rule-based matching engine, and the base64-embedded
-  **Gellix** brand font. This is a **flattened deploy build** — images are referenced at the repo
-  root (e.g. `six-kings.jpg`), not under `img/`.
-- **`*.jpg`** — ~200 event key visuals, all **1080×1350 (4:5)**, recompressed to ~150–200 KB each:
-  - semantic names for the hero events (`six-kings.jpg`, `afc.jpg`, `nye.jpg`, `dolphin.jpg`, …)
-  - `rs27-pNNN.jpg` — booklet-page exports for the long tail of attractions.
-- **`logo-webook.png`** — the official WBK wordmark used in the header.
-- **README.md** — this file.
 
-> The editable **source** (`riyadh-season-game.html`, which uses `img/…` paths and is flattened
-> into `index.html` at deploy time) lives in the design workspace, not the repo. If you keep
-> iterating, bring the source into the repo and add a one-line build step (see *Deploy*).
+- **`index.html`** is the whole app in one file with no build step (about 1,870 lines): markup,
+  styles, logic, catalogue and the base64-embedded Gellix font. It is a flattened deploy copy:
+  images are referenced at the repo root, not under `img/`.
+- **`rs-*.jpg`, `wb-*.jpg`, `wbk-*.jpg`** are the posters the app uses now (square, from webook).
+- **`logo-webook.png`** is the header wordmark.
+- About 200 older images (`rs27-pNNN.jpg` and others) are from the earlier booklet-based version.
+  A few are still used by the "not announced yet" screen; the rest can be pruned.
+
+The editable source uses `img/…` paths and lives in the Claude artifact, not in this repo. If you
+keep iterating, bring the source in and add a one-line flatten step.
 
 ## Tech at a glance
-- **No framework, no build.** Plain HTML + vanilla JS + CSS in one file.
-- **Routing:** screen-based. Each `<section class="screen" data-s="…">` is shown by `go(id)`. No
-  URL state. The flow is Swipe → Calendar → Circles → Timeline → Outing → Book.
-- **Swipe:** pointer events on the card deck (`deckDown/Move/End`); right/left/down thresholds map
-  to like/skip/maybe. Native image-drag and text selection are disabled so a drag is always a swipe.
-- **Cards:** the art is a real `<img>` with `object-fit: cover; object-position: top` on a
-  fixed **4:5** full-bleed card, so every KV fills cleanly with nothing cut.
-- **Fonts:** Gellix (Latin), base64-embedded so the file is self-contained. English only (the KVs
-  themselves are bilingual art).
-- **No persistence / no runtime capabilities.** Unlike the taste-challenge game, this one does not
-  use the Claude `db` — it's pure front-end state.
 
-## How it plays
-1. **Swipe** — a deck of **10** events, balanced one-per-category (see *Deck logic*). Pick ≥5 to continue.
-2. **My Winter Calendar** — tap the nights you're free (Oct–Feb).
-3. **You & your circles** — your webook identity + create circles (friends/contacts), and a
-   **"List me for stranger matching"** privacy toggle.
-4. **Your winter** — the AI-built timeline (`OUTINGS`) across the months. Tap any plan.
-5. **Outing** — depending on state: invite a circle, find **resale** (sold out), **notify me**
-   (not live yet), or **match with someone going** (no circle free). Every outing also shows an
-   **✨ Make it a combo** add-on. Then **Book** → webook handoff with a pay-your-own tracker.
+- Plain HTML, CSS and vanilla JavaScript. No framework, no build.
+- Screens are `<section class="screen" data-s="…">`, shown by `go(id)`. No URL state.
+- Styles follow webook's own look: zinc greys on near-black, pink as the single accent, Gellix at
+  weights 400 and 600, line icons from an inline SVG sprite.
+- Animations respect `prefers-reduced-motion`.
+- English only.
 
-## Deck logic
-`sessionDeck()` builds each session's deck so no two players get the same set and it's never
-one-category-heavy: it buckets `CATALOG` by category, shuffles, and round-robins **one card per
-category** (then a second pass) until it has **10**, then shuffles the final order. A `decided{}`
-set records every swiped card so it never reappears when you change the category filter or tap
-"show more options."
+## Data model (all in memory)
 
-## Data model (all in-memory, near the top of `index.html`)
-- **`CATALOG`** (171) — every swipeable event: `{id, t, cat, when, venue, price, emo, g, demand, fr}`.
-  `emo`/`g` are the emoji + gradient fallback used only if an image is missing.
-- **`IMG`** — `id → image filename`.
-- **`CATS`** — the filter chips: All, Sports, Concerts, Restaurants, Shopping, Kids, Zones, Shows,
-  Experiences, Culture.
-- **`OUTINGS`** (10) — the curated AI timeline: `{id, mon, d, t, venue, emo, img, price, state, why, ev?}`.
-  `state` ∈ `ready | booked | sold | notify | match` drives the outing screen. `ev` links a
-  sold-out outing to its `RESALE` entry.
-- **`CIRCLES`** — user-created groups (in-memory; empty at start).
-- **`USER`** — the player's taste profile (`picks`, `booked`, `layers`, `vibe`, `budget`, `outings`).
-- **`POOL`** (8) + **`WEBOOK_USERS`** — synthetic webook members for the matching demo.
-- **`NOTIFY`** — register-interest teasers for not-yet-announced nights.
-- **`RESALE`** — sample resale listings per sold-out event.
-
-## Matching engine
-`scoreCandidate(c)` scores a pool member against `USER` and `runMatch()` ranks them:
-- **35%** shared bookings/picks (Jaccard overlap)
-- **30%** shared interest layers (Jaccard)
-- **20%** vibe match + shared outing types
-- **15%** budget proximity
-
-Candidates ≥ 50 are shown (top 5), with the shared events/layers surfaced as the "why." It's a
-transparent rule-based baseline — swap it for a model over real webook data, keeping names and
-numbers hidden until **both** sides opt in (the UX already promises this).
-
-## Images
-All KVs are **1080×1350 (4:5)** to match the card. They were cropped/extended from the RS 26-27
-booklet (provenance is in the original artwork pack's `game-source-map.csv` / `booklet-index.csv`).
-The card uses `object-fit: cover` with a top anchor, so logos/titles at the top of each poster stay
-visible. A handful of **unused** images from dropped catalogue entries are still committed — harmless,
-but can be pruned.
-
-## Deploy
-Static site. **GitHub Pages serves the repo root on `main`** — committing `index.html` (+ images)
-publishes to the live URL within ~1–2 minutes (hard-refresh to beat the Pages cache). There is no
-CI and no build server.
-
-> In the environment this was built in there were **no git credentials**, so every deploy was done
-> through GitHub's web **"Add file → Upload files"** UI. If you clone it with normal git access you
-> can just `git push`. Consider: (1) renaming the repo to `winter-planner`, (2) moving the editable
-> source in and adding a tiny flatten step (`index.html` = source with `img/` stripped + a
-> `<!doctype>`+viewport wrapper), so you're not hand-maintaining the deploy build.
+- **`CATALOG`** (62): `{id, t, cat, tags, venue, city, on | run, tm, p, price, emo, img, demand, url}`.
+- **`INTERESTS`** (17) and **`IGROUPS`**: the interests and their shelves.
+- **`PROFILES`**: per-member state for the two demo members. `saveMe()` / `loadMe()` swap it in
+  and out of the globals; `seeAsFriend()` switches member.
+- Per member: `SELECTED`, `SWIPES`, `HISTORY`, `freeDays`, `bestTimes`, `OUTINGS`, `PLAN_OVR`
+  (moved dates and cancellations), `VOTES`, `SHARE`, `COMBO`, `CIRCLES`, `FPV` (my answers on
+  sample friends' plans).
+- **`FRIEND_PLANS`**: the two sample friends' plans, generated by `friendPlanItems()`.
+- **`POOL`**: the synthetic members for new-friend matching. **`RESALE`**, **`NOTIFY`**: sample data.
 
 ## Where things are in `index.html`
-Line numbers drift — search by name:
-- `CATALOG` / `IMG` / `CATS` — catalogue & images (~670–860).
-- `CIRCLES` / `WEBOOK_USERS` / `OUTINGS` / `USER` / `POOL` / `NOTIFY` / `RESALE` — state & reference data (~868–933).
-- `sessionDeck()` / `buildDeck()` / `deckEnd()` — the swipe deck (~705+, ~807+).
-- `scoreCandidate()` / `runMatch()` — matching (~914–924).
-- `renderTimeline()` / `openOuting()` / `renderOuting()` — the plan & outing screens (~1062–1166).
-- `addonFor()` / `outingAddonHTML()` — the combo add-on (~1168+).
-- `setPay()` / `doBook()` — the webook booking handoff (~1208+).
-- `openResale()` / `openMatch()` / `openGoMatch()` — resale & stranger-matching (~1271+).
 
-## ⚠️ What to swap for production
-1. **Persistence + auth (first).** Nothing is saved. Add webook sign-in and a store for the
-   player's profile, circles, swipes and bookings before anything else.
-2. **Matching on real data.** Replace `POOL`/`scoreCandidate` with a cross-check against webook's
-   database; enforce privacy (hashed phone matching, mutual opt-in before any contact detail).
-3. **Circles, contacts & invites.** Real WhatsApp invites and real RSVPs; guess webook accounts
-   from the user's contacts by number.
-4. **Booking & payment.** Wire the "hand to webook" screen to real prefilled carts/deep-links and a
-   genuine pay-your-own split; the tracker is currently cosmetic.
-5. **Resale.** Point the sold-out flow at live `resell.webook.com` inventory.
-6. **Catalogue data pass.** The 171 events were auto-generated from the booklet — verify names,
-   dates, prices, categories and bookability against the live RS catalogue; drop anything not
-   individually bookable (the Boulevard World country pavilions were already removed for that reason).
-7. **Assets & fonts.** Confirm KV usage rights and that Gellix's license covers web embedding on
-   the production domain.
+Search by name; line numbers drift.
 
-## Notes
-- Single static file + images — deployable to any static host once persistence is wired.
-- English only; prices/venues on the booklet-sourced long tail are placeholders ("On webook.com").
-- No features beyond the approved flow; all "AI" output is constrained to the catalogue.
+- Catalogue and dates: `CATALOG`, `eventDates`, `whenText`, `available`.
+- Taste and deck: `tasteProfile`, `tasteScore`, `sessionDeck`, `buildDeck`, `doSwipeCard`, `moreOptions`.
+- Plan: `buildPlan`, `rebuildPlan`, `altDates`, `setOutingDate`, `doCancel`.
+- Members and invites: `freshProfile`, `saveMe`, `loadMe`, `seeAsFriend`, `invites`, `planItems`, `setVote`.
+- Plans screen: `renderTimeline`, `myPlanHtml`, `friendPlanHtml`, `respCardHtml`, `toggleHub`.
+- Sharing: `openShare`, `renderShare`, `sendWa`, `simulateVotes` (demo only).
+- Outing and checkout: `renderOuting`, `addonFor`, `addAddon`, `renderBook`, `setPay`, `doBook`, `renderTracker`.
+- New friends and circle: `scoreCandidate`, `matchList`, `renderGoMatch`, `createCircle`, `renderCircle`, `renderNfProfile`.
+- Cover and tutorial: `renderCover`, `showSwipeTut`.
+
+## New-friend matching
+
+`scoreCandidate(c)` scores a pool member against the current member: shared bookings and likes 35%,
+shared interests 30%, taste answers 20%, budget 15%. The five closest are listed. It is a
+transparent rule-based baseline to be replaced by matching over real webook data.
+
+## Deploy
+
+Static site. GitHub Pages serves the repo root on `main`; committing `index.html` publishes within
+a minute or two. There is no CI. Deploys so far were done through GitHub's web "Upload files" page
+because the build environment had no git credentials. With normal git access you can `git push`.
+
+## What to build for production
+
+1. **Sign-in and persistence.** Nothing is saved today.
+2. **Plans, invites and votes** as described in "How people are connected".
+3. **Live catalogue** with availability, dates and prices, including resale.
+4. **Real booking history** as the taste signal, and age and gender from the account for the
+   new-friend profile.
+5. **Booking and payment**: prefilled carts, per-person payment links, payment status.
+6. **New-friend matching** on real members, with consent, verification and reporting.
+
+## Decisions still open
+
+- Should voting on a shared plan require a webook sign-in? Viewing does not.
+- Should a plan owner be able to remove someone who opened a forwarded link?
+- New friends: is showing first name, age and gender to matched members acceptable, and should the
+  Women / Men filter default to the member's own gender?
+- Does the Gellix licence cover web embedding on the production domain, and are the posters cleared
+  for this use?
