@@ -414,6 +414,32 @@ span.chip{cursor:default}
 @media (prefers-reduced-motion:reduce){
   .ccol,.planbody.anim,.screen.active .ceyebrow,.screen.active .chead,.screen.active .csub,.screen.active .csteps li{animation:none}
 }
+/* ---------- new friends: gathering + circle ---------- */
+.cand.on{border-color:var(--green)}
+.btn.picked{background:var(--green-soft);color:var(--green);border:1px solid transparent}
+.sgtag.hit{background:var(--pink-soft);color:var(--pink2)}
+.nfp{border:1px solid var(--line);border-radius:var(--r);padding:14px;margin:-2px 0 12px}
+.nfp .cap{color:var(--mut2);font-size:11px;letter-spacing:.06em;text-transform:uppercase;margin-bottom:10px}
+.nfp .hd{display:flex;align-items:center;gap:12px}
+.nfp .nm b{display:block;font-size:14.5px;color:var(--ink)}
+.nfp .nm .mut{color:var(--mut);font-size:12.5px}
+/* ---------- swipe tutorial ---------- */
+.tut{position:absolute;inset:0;z-index:80;border-radius:18px;background:rgba(9,9,11,.8);color:#fff;cursor:pointer;animation:tutIn .25s ease both}
+.tut>div{position:absolute;display:flex;flex-direction:column;align-items:center;gap:3px;text-align:center}
+.tut b{font-size:15px;font-weight:600;margin-top:4px}
+.tut span{font-size:12.5px;color:var(--text)}
+.tut .i{width:36px;height:36px;stroke-width:2}
+.tut .tl{left:22px;top:36%}
+.tut .tr{right:22px;top:36%}
+.tut .td{left:50%;bottom:26px;margin-left:-50px;width:100px}
+.tut .tr .i{color:var(--pink2);animation:tutR .9s ease-in-out infinite}
+.tut .tl .i{animation:tutL .9s ease-in-out infinite}
+.tut .td .i{color:var(--amber);animation:tutD .9s ease-in-out infinite}
+@keyframes tutIn{from{opacity:0}to{opacity:1}}
+@keyframes tutR{0%,100%{transform:translateX(0)}50%{transform:translateX(9px)}}
+@keyframes tutL{0%,100%{transform:rotate(180deg) translateX(0)}50%{transform:rotate(180deg) translateX(9px)}}
+@keyframes tutD{0%,100%{transform:rotate(90deg) translateX(0)}50%{transform:rotate(90deg) translateX(9px)}}
+@media (prefers-reduced-motion:reduce){.tut,.tut .i{animation:none}.tut .tl .i{transform:rotate(180deg)}.tut .td .i{transform:rotate(90deg)}}
 .confetti{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:30}
 .confetti i{position:absolute;top:-10px;width:9px;height:14px;opacity:.9;animation:fall 1.8s linear forwards}
 @keyframes fall{to{transform:translateY(120vh) rotate(540deg);opacity:0}}
@@ -422,6 +448,7 @@ span.chip{cursor:default}
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
   <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
   <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21s7-6.2 7-11.5a7 7 0 1 0-14 0C5 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></symbol>
+  <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M4 12h15M13 6l6 6-6 6"/></symbol>
   <symbol id="i-chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></symbol>
   <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
   <symbol id="i-heart" viewBox="0 0 24 24"><path d="M12 20.5s-7.5-4.6-7.5-10.2A4.3 4.3 0 0 1 12 7.6a4.3 4.3 0 0 1 7.5 2.7c0 5.6-7.5 10.2-7.5 10.2z"/></symbol>
@@ -477,6 +504,11 @@ span.chip{cursor:default}
         <div class="lead" style="margin-bottom:12px" id="swipeLead">Swipe right to like, left to skip, down for maybe.</div>
         <div class="chips" id="catchips"></div>
         <div class="deck" id="deck">
+          <div class="tut" id="swTut" hidden onpointerdown="event.stopPropagation();hideSwipeTut()">
+            <div class="tl"><svg class="i" aria-hidden="true"><use href="#i-arrow"/></svg><b>Swipe left</b><span>Don’t like</span></div>
+            <div class="tr"><svg class="i" aria-hidden="true"><use href="#i-arrow"/></svg><b>Swipe right</b><span>Like</span></div>
+            <div class="td"><svg class="i" aria-hidden="true"><use href="#i-arrow"/></svg><b>Swipe down</b><span>Maybe</span></div>
+          </div>
           <div class="empty">
             <div style="font-size:40px" id="emptyEmo"></div>
             <div style="font-weight:600;font-size:20px" id="emptyTitle">Your winter's taking shape</div>
@@ -534,9 +566,10 @@ span.chip{cursor:default}
         <div id="hubList"></div>
         <div class="subh">Going solo sometimes?</div>
         <div class="ncard">
-          <div class="c"><h3>Open to meeting a new friend</h3><div class="sub">List me publicly so verified members who share my taste can invite me to an outing. Your name &amp; number stay private until you both opt in.</div></div>
+          <div class="c"><h3>Open to meeting a new friend</h3><div class="sub">List me so verified members who share my taste can invite me to a gathering. They see your first name, age, gender and interests. Your number stays private.</div></div>
           <button class="switch" id="pubBtn" onclick="togglePublic()" role="switch" aria-checked="false" aria-label="Open to meeting a new friend"></button>
         </div>
+        <div id="nfProfile"></div>
         <div id="aiCard"></div>
         <div class="demoswitch" id="demoSwitch"></div>
       </div>
@@ -680,40 +713,37 @@ span.chip{cursor:default}
       </div>
     </section>
 
-    <!-- 10b GO-MATCH (someone already going to this event) -->
+    <!-- 10b NEW FRIENDS: invite a few members who are going, as a gathering -->
     <section class="screen" data-s="gomatch">
       <div class="body">
         <div class="backlink" onclick="go('outing')">‹ Back to the plan</div>
-        <div class="badge b">AI matching · opt-in</div>
-        <div class="h1" style="margin-top:2px" id="gmTitle">Meet a new friend who's going</div>
-        <div class="lead">None of your friends can make it? Make a new friend: AI found verified webook members <b style="color:#fff">already going to this event</b> who share your taste — cross-checked against bookings, interests, vibe &amp; budget.</div>
+        <div id="gmFor" style="color:var(--pink2);font-size:12.5px;font-weight:600"></div>
+        <div class="h1" style="margin-top:2px">Meet new friends who’re going</div>
+        <div class="lead">None of your friends can make it? Invite a few verified webook members who are already going and share your taste. Pick two or more and it’s a small gathering, not a one-to-one.</div>
         <div class="mstat" id="gmScanBox"><h3>Finding people going</h3><p>Scanning verified webook members attending this event.</p><div style="margin-top:8px" id="gmScan"></div></div>
         <div id="gmResult" hidden>
-          <div class="conf"><div class="big" id="gmConf">—</div><div class="t"><b>Match confidence.</b> How closely they line up with your taste.</div></div>
-          <div class="subh">Verified members going to this event</div>
+          <div class="chips" id="gmFilter" style="margin-bottom:12px"></div>
           <div id="gmCands"></div>
-          <div class="feed">Same engine as blind tables: shared bookings 35% · interest layers 30% · game vibe 20% · budget 15%. Only people over a genuine-overlap bar are shown.</div>
+          <div class="feed">Ranked by overlap with you: shared bookings 35% · interests 30% · taste answers 20% · budget 15%.</div>
         </div>
       </div>
-      <div class="actionbar"><button class="btn ghost" onclick="go('outing')">Back to the plan</button></div>
+      <div class="actionbar"><button class="btn primary" id="gmBtn" disabled onclick="createCircle()">Pick who to invite</button></div>
     </section>
 
-    <!-- 10c TOGETHER (going with a matched member) -->
+    <!-- 10c CIRCLE: the group created for a new-friends gathering -->
     <section class="screen" data-s="together">
       <div class="body">
-        <div class="backlink" onclick="go('gomatch')">‹ Back</div>
-        <div class="badge g">✓ New friend</div>
-        <div style="display:flex;align-items:center;justify-content:center;gap:12px;margin:16px 0 8px">
-          <span id="tgYou" style="width:58px;height:58px;border-radius:50%;background:#ff6ba8;display:grid;place-items:center;font-size:19px;font-weight:600;color:#fff">OM</span>
-          <span class="amp">&amp;</span>
-          <span id="tgThem" style="width:58px;height:58px;border-radius:50%;background:#5aa9ff;display:grid;place-items:center;font-size:19px;font-weight:600;color:#fff">R</span>
+        <div class="backlink" onclick="go('outing')">‹ Back to the plan</div>
+        <div class="badge g">Circle created</div>
+        <div id="tgFor" style="color:var(--pink2);font-size:12.5px;font-weight:600"></div>
+        <div class="h1" style="margin-top:2px">Your circle</div>
+        <div class="lead" id="tgLead"></div>
+        <div class="subh" style="margin-top:8px">In this circle</div>
+        <div id="tgMembers"></div>
+        <button class="btn ghost" style="margin-top:14px" onclick="openGoMatch()">Invite more people</button>
+        <div class="handoff" style="margin-top:14px"><span class="wbk">What happens next</span>
+          <b>1.</b> Everyone who joins buys their own seat on webook.<br><b>2.</b> The circle chat opens once two of you have booked, so you meet as a group.<br><b>3.</b> Verified accounts, public venue. Phone numbers stay private.
         </div>
-        <div class="h1" id="tgTitle" style="text-align:center">You're going with R.</div>
-        <div class="lead" id="tgLead" style="text-align:center">Tarab night · you'll meet at the venue.</div>
-        <div class="handoff" style="margin-top:12px"><span class="wbk">What happens next</span>
-          <b style="color:#fff">1.</b> You each buy your own seat on webook.<br><b style="color:#fff">2.</b> Verified accounts · public venue · women-only tables honoured.<br><b style="color:#fff">3.</b> A private chat unlocks once you've both booked — so you connect before the night.
-        </div>
-        <div class="safety"><div class="s">Verified</div><div class="s">Public venue</div><div class="s">Chat after booking</div></div>
       </div>
       <div class="actionbar"><button class="btn primary" id="tgBtn" onclick="doTogether()">Buy my seat on webook</button></div>
     </section>
@@ -768,7 +798,7 @@ span.chip{cursor:default}
       <h4>Try an outing</h4>
       <a onclick="demoOuting('rs-six-kings')"><span>Sold out → resale</span><span class="n">6 Kings Slam</span></a>
       <a onclick="demoOuting('rs-toy-shop')"><span>Votes · pay · track</span><span class="n">The Toy Shop</span></a>
-      <a onclick="demoFriend()"><span>Meet a new friend</span><span class="n">going solo</span></a>
+      <a onclick="demoFriend()"><span>Meet new friends</span><span class="n">gathering · circle</span></a>
       <a onclick="go('notify')"><span>Notify me — not live yet</span><span class="n">watch-list</span></a>
     </div>
   </div>
@@ -1072,14 +1102,14 @@ var curOuting=null, payMode='own';
 /* ===== matching (unchanged logic) ===== */
 var USER={picks:[],booked:["rs-ufc","rs-six-kings","rs-zodiac","rs-power-slap"],layers:["combat","majors","dining"],vibe:"high-energy",budget:"mid",outings:["concerts","sports","dining"]};
 var POOL=[
- {id:"u1",in:"RS",nm:"R.",c:"#5aa9ff",gender:"m",booked:["rs-six-kings","rs-zodiac","rs-ufc"],layers:["majors","dining","combat"],vibe:"high-energy",budget:"mid",outings:["sports","dining"]},
- {id:"u2",in:"HN",nm:"H.",c:"#6ee7b7",gender:"f",booked:["rs-six-kings","wb-saber"],layers:["arabic-music","dining","culture"],vibe:"high-energy",budget:"mid",outings:["concerts","dining"]},
- {id:"u3",in:"AM",nm:"A.",c:"#ffd166",gender:"m",booked:["rs-ufc","rs-power-slap"],layers:["combat","majors","arabic-music"],vibe:"high-energy",budget:"mid",outings:["sports","concerts"]},
- {id:"u4",in:"LZ",nm:"L.",c:"#c4a7ff",gender:"f",booked:["rs-zodiac","wb-saber","rs-toy-shop"],layers:["dining","arabic-music","culture"],vibe:"relaxed",budget:"mid",outings:["dining","concerts"]},
- {id:"u5",in:"MT",nm:"M.",c:"#ff9ecb",gender:"m",booked:["rs-six-kings","rs-power-slap","rs-zodiac"],layers:["majors","combat","dining"],vibe:"high-energy",budget:"premium",outings:["sports","dining"]},
- {id:"u6",in:"SK",nm:"S.",c:"#8be0ff",gender:"f",booked:["rs-cocomelon","rs-toy-shop"],layers:["family","parks"],vibe:"relaxed",budget:"low",outings:["family"]},
- {id:"u7",in:"KD",nm:"K.",c:"#f5a623",gender:"m",booked:["rs-battle-kart"],layers:["battle","parks"],vibe:"high-energy",budget:"low",outings:["experiences"]},
- {id:"u8",in:"NF",nm:"N.",c:"#b9a6ff",gender:"f",booked:["wb-saber","rs-zodiac","rs-six-kings"],layers:["dining","arabic-music","majors"],vibe:"high-energy",budget:"mid",outings:["dining","concerts","sports"]}
+ {id:"u1",in:"RA",nm:"Rakan",age:28,c:"#5aa9ff",gender:"m",booked:["rs-six-kings","rs-zodiac","rs-ufc"],layers:["majors","dining","combat"],vibe:"high-energy",budget:"mid",outings:["sports","dining"]},
+ {id:"u2",in:"HA",nm:"Hanan",age:26,c:"#6ee7b7",gender:"f",booked:["rs-six-kings","wb-saber"],layers:["arabic-music","dining","culture"],vibe:"high-energy",budget:"mid",outings:["concerts","dining"]},
+ {id:"u3",in:"AM",nm:"Ammar",age:31,c:"#ffd166",gender:"m",booked:["rs-ufc","rs-power-slap"],layers:["combat","majors","arabic-music"],vibe:"high-energy",budget:"mid",outings:["sports","concerts"]},
+ {id:"u4",in:"LI",nm:"Lina",age:27,c:"#c4a7ff",gender:"f",booked:["rs-zodiac","wb-saber","rs-toy-shop"],layers:["dining","arabic-music","culture"],vibe:"relaxed",budget:"mid",outings:["dining","concerts"]},
+ {id:"u5",in:"MI",nm:"Mishal",age:33,c:"#ff9ecb",gender:"m",booked:["rs-six-kings","rs-power-slap","rs-zodiac"],layers:["majors","combat","dining"],vibe:"high-energy",budget:"premium",outings:["sports","dining"]},
+ {id:"u6",in:"SA",nm:"Sara",age:30,c:"#8be0ff",gender:"f",booked:["rs-cocomelon","rs-toy-shop"],layers:["family","parks"],vibe:"relaxed",budget:"low",outings:["family"]},
+ {id:"u7",in:"KH",nm:"Khalid",age:24,c:"#f5a623",gender:"m",booked:["rs-battle-kart"],layers:["battle","parks"],vibe:"high-energy",budget:"low",outings:["experiences"]},
+ {id:"u8",in:"NO",nm:"Nouf",age:29,c:"#b9a6ff",gender:"f",booked:["wb-saber","rs-zodiac","rs-six-kings"],layers:["dining","arabic-music","majors"],vibe:"high-energy",budget:"mid",outings:["dining","concerts","sports"]}
 ];
 function jacc(a,b){var s=new Set(a);var inter=b.filter(function(x){return s.has(x);}).length;var uni=new Set(a.concat(b)).size||1;return inter/uni;}
 function overlapCount(a,b){var s=new Set(a);return b.filter(function(x){return s.has(x);}).length;}
@@ -1164,7 +1194,7 @@ function renderWho(){var w=document.getElementById('whoWrap');w.innerHTML='';var
 
 /* ===== public listing ===== */
 var publicMatch=false;
-function togglePublic(){publicMatch=!publicMatch;var b=document.getElementById('pubBtn');b.classList.toggle('on',publicMatch);b.setAttribute('aria-checked',publicMatch?'true':'false');toast(publicMatch?'You’re open to meeting a new friend — kept private until you both opt in':'Hidden — you won’t be suggested as a new friend');}
+function togglePublic(){publicMatch=!publicMatch;var b=document.getElementById('pubBtn');b.classList.toggle('on',publicMatch);b.setAttribute('aria-checked',publicMatch?'true':'false');renderNfProfile();toast(publicMatch?'You’re open to meeting new friends — your number stays private':'Hidden — you won’t be suggested as a new friend');}
 /* who counts toward booking: you + the friends who voted "in" on this outing */
 function buildMembers(o){var prev={};(o.members||[]).forEach(function(x){prev[x.nm]=x.paid;});o.members=[m("You","you",prev["You"])].concat(votersFor(o,'in').map(function(n){return m(n,"in",prev[n]);}));}
 function goingMembers(){return (curOuting.members||[]).filter(function(x){return x.status==='in'||x.status==='you';});}
@@ -1172,7 +1202,7 @@ function goingMembers(){return (curOuting.members||[]).filter(function(x){return
 /* ===== timeline ===== */
 function thumbHtml(o,cls){return o.img?'<div class="'+cls+' photo" style="background-image:url(\''+o.img+'\')"></div>':'<div class="'+cls+'" style="background:linear-gradient(135deg,#2a1248,#0c0716)">'+o.emo+'</div>';}
 var TAGS={ready:["ready","Ready to book"],sold:["ready","Ready to book"],match:["match","Meet a new friend"],booked:["booked","Booked"]};
-function tallyHtml(o){var i=votersFor(o,'in').length,mb=votersFor(o,'maybe').length;if(!i&&!mb)return '';return '<span class="tally">'+i+' in'+(mb?' · '+mb+' maybe':'')+'</span>';}
+function tallyHtml(o){var i=votersFor(o,'in').length,mb=votersFor(o,'maybe').length;if(!i&&!mb)return CIRCLES[o.id]?'<span class="tally">Circle of '+(CIRCLES[o.id].members.length+1)+'</span>':'';return '<span class="tally">'+i+' in'+(mb?' · '+mb+' maybe':'')+'</span>';}
 function respCardHtml(){
   var resp=respondedFriends().sort(function(a,b){return (PROFILES[b]?1:0)-(PROFILES[a]?1:0);});
   if(!resp.length)return '<div class="handoff"><span class="wbk">Going with friends?</span>'+(SHARE.times?'Link shared. Answers will show up here as friends vote.':'Send your winter to your WhatsApp groups. Friends vote on each outing — in, maybe or can’t — and their answers show up right here.')+'</div>';
@@ -1185,7 +1215,7 @@ function respCardHtml(){
   var opens=resp.length+2+SHARE.times;
   return '<div class="respcard"><div class="rh"><span class="rt">Friends’ responses</span><span class="avs">'+avs+'</span></div>'+
     '<div class="rs"><b>'+resp.length+' friend'+(resp.length===1?'':'s')+' voted</b> · '+opens+' opened your link</div>'+
-    lines.slice(0,4).map(function(l){return '<div class="rl"><span>'+ICO[l.v]+'</span><span><b>'+l.n+'</b> '+LBL[l.v]+' '+l.o.t+'</span></div>';}).join('')+
+    lines.filter(function(l,i){return lines.map(function(x){return x.n;}).indexOf(l.n)===i;}).slice(0,4).map(function(l){return '<div class="rl"><span>'+ICO[l.v]+'</span><span><b>'+l.n+'</b> '+LBL[l.v]+' '+l.o.t+'</span></div>';}).join('')+
     '<div class="row2" style="margin-top:10px"><button class="btn ghost" onclick="seeAsFriend()">See it as '+otherMember()+'</button><button class="btn ghost" onclick="openShare()">Share again</button></div></div>';
 }
 function shortDay(s){var d=fromIso(s);return d.getDate()+' '+MO[d.getMonth()];}
@@ -1223,7 +1253,7 @@ function toggleHub(k){
 }
 /* the plans screen: "Your plan" first, then every plan a friend invited you to — one open at a time */
 function renderTimeline(){
-  renderAiCard();
+  renderAiCard();renderNfProfile();
   var mine=planOutings(),resp=respondedFriends().length,chev='<svg class="i" aria-hidden="true"><use href="#i-chev"/></svg>';
   function card(key,av,title,sub,flag,body){
     var open=hubOpen===key;
@@ -1299,17 +1329,17 @@ function sendWa(){
 var PROFILES={},hubOpen=null,hubAnim=null,planDirty=false,FPV={};   /* FPV: my answers on friends' plans, owner -> {outingId:vote} */
 function freshProfile(name,history,invitedBy,open){
   return {name:name,invitedBy:invitedBy,HISTORY:history,SELECTED:[],SWIPES:{},PLAN_OVR:{date:{},cancelled:{}},OUTINGS:[],PLAN_META:null,
-    freeDays:[],bestTimes:[],VOTES:{},SHARE:{times:0,ev:{}},COMBO:{},FPV:{},publicMatch:false,loc:"Riyadh",hubOpen:open||null,seenCover:false};
+    freeDays:[],bestTimes:[],VOTES:{},SHARE:{times:0,ev:{}},COMBO:{},CIRCLES:{},FPV:{},publicMatch:false,loc:"Riyadh",hubOpen:open||null,seenCover:false};
 }
 function saveMe(){
   var p=PROFILES[USER_NAME];if(!p)return;
   p.HISTORY=HISTORY;p.SELECTED=SELECTED;p.SWIPES=SWIPES;p.PLAN_OVR=PLAN_OVR;p.OUTINGS=OUTINGS;p.PLAN_META=PLAN_META;p.freeDays=freeDays;p.bestTimes=bestTimes;
-  p.VOTES=VOTES;p.SHARE=SHARE;p.COMBO=COMBO;p.FPV=FPV;p.publicMatch=publicMatch;p.loc=USER_LOC;p.hubOpen=hubOpen;
+  p.VOTES=VOTES;p.SHARE=SHARE;p.COMBO=COMBO;p.CIRCLES=CIRCLES;p.FPV=FPV;p.publicMatch=publicMatch;p.loc=USER_LOC;p.hubOpen=hubOpen;
 }
 function loadMe(name){
   var p=PROFILES[name];USER_NAME=name;
   HISTORY=p.HISTORY;SELECTED=p.SELECTED;SWIPES=p.SWIPES;PLAN_OVR=p.PLAN_OVR;OUTINGS=p.OUTINGS;PLAN_META=p.PLAN_META;freeDays=p.freeDays;bestTimes=p.bestTimes;
-  VOTES=p.VOTES;SHARE=p.SHARE;COMBO=p.COMBO;FPV=p.FPV;publicMatch=p.publicMatch;USER_LOC=p.loc;hubOpen=p.hubOpen;
+  VOTES=p.VOTES;SHARE=p.SHARE;COMBO=p.COMBO;CIRCLES=p.CIRCLES;FPV=p.FPV;publicMatch=p.publicMatch;USER_LOC=p.loc;hubOpen=p.hubOpen;
   curOuting=null;shareCtx=null;planDirty=false;
   /* put the screens back in this member's state */
   [].slice.call(document.querySelectorAll('#dow7 .dchip')).forEach(function(c,i){c.classList.toggle('on',freeDays.indexOf(WD[i])>=0);});
@@ -1458,7 +1488,7 @@ function openCancel(){
     (o.state==='booked'?' Your booking is cancelled too; refunds follow webook’s ticket policy.':'')+'</div>'+
     '<button class="btn danger" style="margin-top:12px" onclick="doCancel()">Yes, cancel event</button><button class="btn ghost" style="margin-top:10px" onclick="closeAct()">Keep it</button>');
 }
-function doCancel(){var o=curOuting,i=OUTINGS.indexOf(o);if(i>=0)OUTINGS.splice(i,1);PLAN_OVR.cancelled[o.id]=1;delete VOTES[o.id];delete COMBO[o.id];closeAct();toast(o.t+' cancelled — removed from your winter');go('timeline');}
+function doCancel(){var o=curOuting,i=OUTINGS.indexOf(o);if(i>=0)OUTINGS.splice(i,1);PLAN_OVR.cancelled[o.id]=1;delete VOTES[o.id];delete COMBO[o.id];delete CIRCLES[o.id];closeAct();toast(o.t+' cancelled — removed from your winter');go('timeline');}
 
 /* ===== outing (invite + commit, mapped) ===== */
 function openOuting(o){curOuting=o;buildMembers(o);renderOuting();go('outing');}
@@ -1509,7 +1539,7 @@ function renderOuting(){
         voteRow('You','you')+ins.map(function(n){return voteRow(n,'in');}).join('')+mbs.map(function(n){return voteRow(n,'maybe');}).join('')+outs.map(function(n){return voteRow(n,'out');}).join('')+
         '<button class="btn ghost" style="margin-top:10px" onclick="openShare(curOuting.id)"><svg class="i" aria-hidden="true"><use href="#i-wa"/></svg> Invite more friends to this event</button>';
     }
-    h+='<div class="handoff" style="margin-top:12px;"><span class="wbk">None of your friends free?</span>Make a new friend: a verified webook member who’s also going to this event and shares your taste.<button class="btn ghost" style="margin-top:9px" onclick="openGoMatch()">Meet a new friend who’s going →</button></div>';
+    h+=circleCardHtml(o);
     body.innerHTML=h;
     /* tickets come from webook, or from resale when webook is sold out — same button either way */
     bar.innerHTML='<button class="btn primary" onclick="'+(o.state==='sold'?'openResale(curOuting.ev)':'openBook()')+'">'+(ins.length?'Book for the group →':'Book my seat →')+'</button>';
@@ -1670,46 +1700,110 @@ function showMatchResult(){
 }
 function bar(lab,cls,val){return '<div class="sigbar '+cls+'"><span class="lab">'+lab+'</span><span class="track"><span style="width:'+val+'%"></span></span><span class="val">'+val+'</span></div>';}
 
-/* ===== per-event match: someone already going (friends busy) ===== */
-var GOSCAN=[["","Who's going","verified webook members attending this event"],["","Profile interest layers","matched to yours"],["","Taste-game answers","vibe, outings & budget"],["","Verified & safe","verified accounts · women-only option honoured"]];
-var gmOuting=null;
+/* ===== new friends: invite a few members who are already going — a gathering, kept together as a circle =====
+   Circles exist only here: one per outing, made of you and the new friends you invited. */
+var GOSCAN=[["","Who's going","verified webook members attending this event"],["","Interests","matched to yours"],["","Taste answers","what you liked and skipped"],["","Verified & safe","verified accounts · women-only option honoured"]];
+var gmOuting=null,gmSel={},gmGender='all',CIRCLES={};   /* CIRCLES: outingId -> {members:[{id,status:'invited'|'joined'}],booked} */
+function person(id){return POOL.filter(function(c){return c.id===id;})[0];}
+function genderWord(g){return g==='f'?'Female':'Male';}
+function interestChips(keys,shared){return keys.filter(function(k){return BYKEY[k];}).map(function(k){return '<span class="sgtag'+(shared&&shared.indexOf(k)>=0?' hit':'')+'">'+BYKEY[k].label+'</span>';}).join('');}
+/* what other members see when I'm listed: first name, age, gender, interests — never a phone number */
+function myInterests(){var top=PLAN_META&&PLAN_META.top.length?PLAN_META.top.map(function(x){return x[0];}):SELECTED.map(function(k){return BYKEY[k].label;});return top.slice(0,4);}
+function renderNfProfile(){
+  var w=document.getElementById('nfProfile');if(!w)return;
+  if(!publicMatch){w.innerHTML='';return;}
+  var p=PROFILES[USER_NAME]||{},ints=myInterests();
+  w.innerHTML='<div class="nfp"><div class="cap">Your new-friend profile</div><div class="hd"><span class="pav me">'+initials(USER_NAME)+'</span><div class="nm"><b>'+USER_NAME+'</b><span class="mut">'+p.age+' · '+p.gender+' · Verified</span></div></div>'+
+    (ints.length?'<div class="signals">'+ints.map(function(x){return '<span class="sgtag">'+x+'</span>';}).join('')+'</div>':'<div class="vnote">Pick your interests and they show here.</div>')+'</div>';
+}
+function matchList(){
+  return POOL.map(scoreCandidate).sort(function(a,b){return b.overall-a.overall;}).slice(0,5);   /* the five closest people, best match first */
+}
 function openGoMatch(){
   gmOuting=curOuting;go('gomatch');
-  var rows=document.getElementById('gmScan');rows.innerHTML='';document.getElementById('gmResult').hidden=true;
-  document.getElementById('gmTitle').textContent='Meet a new friend at '+gmOuting.t;
+  var rows=document.getElementById('gmScan');rows.innerHTML='';document.getElementById('gmResult').hidden=true;document.getElementById('gmScanBox').hidden=false;
+  document.getElementById('gmFor').textContent=gmOuting.t+' · '+gmOuting.d;
+  var b=document.getElementById('gmBtn');b.disabled=true;b.textContent='Finding people…';
   GOSCAN.forEach(function(s,i){var el=document.createElement('div');el.className='scan';el.id='gm'+i;el.innerHTML='<div class="ic">'+s[0]+'</div><div style="flex:1">'+s[1]+'<span class="sub">'+s[2]+'</span></div><div class="spin" id="gmsp'+i+'"></div>';rows.appendChild(el);});
-  var i=0;(function step(){if(i>0){var prev=document.getElementById('gm'+(i-1));if(prev)prev.classList.add('done');var sp=document.getElementById('gmsp'+(i-1));if(sp)sp.outerHTML='<div class="tick">✓</div>';}if(i<GOSCAN.length){i++;setTimeout(step,520);}else{showGoMatch();}})();
+  var i=0;(function step(){if(i>0){var prev=document.getElementById('gm'+(i-1));if(prev)prev.classList.add('done');var sp=document.getElementById('gmsp'+(i-1));if(sp)sp.outerHTML='<div class="tick">✓</div>';}if(i<GOSCAN.length){i++;setTimeout(step,420);}else{showGoMatch();}})();
 }
 function showGoMatch(){
-  var res=runMatch();var top=res.table.slice(0,3);var ev=gmOuting.t;
-  document.getElementById('gmConf').textContent=Math.round(top.reduce(function(a,s){return a+s.overall;},0)/(top.length||1));
-  document.getElementById('gmCands').innerHTML=top.map(function(s){
-    var c=s.c,sigs='';
-    if(s.sharedEv.length)sigs+='<span class="sgtag db">Also booked '+s.sharedEv.slice(0,2).join(', ')+'</span>';
-    if(s.sharedLayers.length)sigs+='<span class="sgtag">'+s.sharedLayers.slice(0,2).join(' · ')+'</span>';
-    sigs+='<span class="sgtag">'+(c.budget===USER.budget?'same budget':'close budget')+'</span>';
-    return '<div class="cand"><div class="hd"><span class="av" style="background:'+c.c+'">'+c.in+'</span><div class="nm"><b>'+c.nm+' · verified</b><span class="mut">Going to '+ev+'</span></div><div class="score"><div class="n">'+s.overall+'</div><div class="l">MATCH</div></div></div><div class="signals">'+sigs+'</div><button class="btn primary" style="margin-top:10px;padding:11px" onclick="openTogether(\''+c.nm+'\')">Go together →</button></div>';
-  }).join('');
-  document.getElementById('gmResult').hidden=false;
+  gmSel={};gmGender='all';
+  var c=CIRCLES[gmOuting.id];if(c)c.members.forEach(function(x){gmSel[x.id]=true;});
+  document.getElementById('gmScanBox').hidden=true;renderGoMatch();document.getElementById('gmResult').hidden=false;
 }
-var tgName=null,tgO=null;
-function openTogether(name){
-  tgName=name;tgO=gmOuting;
-  document.getElementById('tgYou').textContent=initials(USER_NAME);
-  document.getElementById('tgThem').textContent=(name.replace(/[^A-Za-z]/g,'').slice(0,1).toUpperCase()||'?');
-  document.getElementById('tgTitle').textContent="You're going with "+name;
-  document.getElementById('tgLead').textContent=tgO.t+' · you’ll meet at the venue.';
-  document.getElementById('tgBtn').textContent='Buy my seat on webook · SAR '+tgO.price;
-  go('together');
+function gmPicked(){return Object.keys(gmSel).filter(function(k){return gmSel[k];});}
+function renderGoMatch(){
+  document.getElementById('gmFilter').innerHTML=[['all','Everyone'],['f','Women'],['m','Men']].map(function(f){return '<button class="chip'+(gmGender===f[0]?' on':'')+'" onclick="gmGender=\''+f[0]+'\';renderGoMatch()">'+f[1]+'</button>';}).join('');
+  var list=matchList().filter(function(s){return gmGender==='all'||s.c.gender===gmGender;});
+  document.getElementById('gmCands').innerHTML=list.map(function(s){
+    var c=s.c,on=!!gmSel[c.id];
+    return '<div class="cand'+(on?' on':'')+'"><div class="hd"><span class="av" style="background:'+c.c+'">'+c.in+'</span><div class="nm"><b>'+c.nm+'</b><span class="mut">'+c.age+' · '+genderWord(c.gender)+' · Verified</span></div><div class="score"><div class="n">'+s.overall+'</div><div class="l">MATCH</div></div></div>'+
+      '<div class="signals">'+interestChips(c.layers,s.sharedLayers)+'</div>'+
+      (s.sharedEv.length?'<div class="vnote">Also booked '+s.sharedEv.slice(0,2).join(' and ')+'</div>':'')+
+      '<button class="btn '+(on?'picked':'ghost')+'" style="margin-top:12px;padding:11px" onclick="toggleGm(\''+c.id+'\')">'+(on?'✓ Invited to the gathering':'Invite')+'</button></div>';
+  }).join('')||'<div class="lead">No one in this group right now. Try “Everyone”.</div>';
+  var n=gmPicked().length,b=document.getElementById('gmBtn');
+  b.disabled=!n;b.textContent=!n?'Pick who to invite':(n===1?'Invite 1 person · add more for a gathering':'Invite '+n+' to a gathering');
 }
-function doTogether(){confetti();toast('Booked — going to '+tgO.t+' with '+tgName+'. Chat unlocked ');setTimeout(function(){go('timeline');},1800);}
+function toggleGm(id){gmSel[id]=!gmSel[id];renderGoMatch();}
+/* inviting creates the circle for this outing (or adds to it) */
+function createCircle(){
+  var ids=gmPicked();if(!ids.length)return;
+  var o=gmOuting,old=CIRCLES[o.id],was={};if(old)old.members.forEach(function(x){was[x.id]=x.status;});
+  var fresh=ids.filter(function(id){return !was[id];});
+  CIRCLES[o.id]={members:ids.map(function(id){return {id:id,status:was[id]||'invited'};}),booked:old?old.booked:false};
+  openCircle(o);
+  toast(fresh.length?'Invite sent to '+fresh.length+' new friend'+(fresh.length>1?'s':''):'Circle updated');
+  /* demo only: stands in for the invited members accepting on their own phones */
+  if(fresh.length)setTimeout(function(){
+    var c=CIRCLES[o.id];if(!c)return;
+    var joined=[];c.members.forEach(function(x,i){if(x.status==='invited'&&i<2){x.status='joined';joined.push(person(x.id).nm);}});
+    if(!joined.length)return;
+    var s=document.querySelector('.screen.active');if(s&&s.dataset.s==='together'&&tgO===o)renderCircle();
+    toast(joined.join(' and ')+' joined your circle');
+  },1800);
+}
+var tgO=null;
+function openCircle(o){tgO=o;curOuting=o;renderCircle();go('together');}
+function renderCircle(){
+  var o=tgO,c=CIRCLES[o.id];if(!c)return;
+  var joined=c.members.filter(function(x){return x.status==='joined';}).length;
+  document.getElementById('tgFor').textContent=o.t;
+  document.getElementById('tgLead').textContent=o.d+(o.tm?' · '+o.tm:'')+' · '+o.venue+'. You invited '+c.members.length+' new friend'+(c.members.length>1?'s':'')+(joined?', '+joined+' joined so far.':'. Waiting for them to join.');
+  document.getElementById('tgMembers').innerHTML='<div class="mem"><span class="av" style="background:#ff6ba8">'+initials(USER_NAME)+'</span><span class="nm">'+USER_NAME+' (you)<small>Started this circle</small></span><span class="st you">Host</span></div>'+
+    c.members.map(function(x){var p=person(x.id);return '<div class="mem"><span class="av" style="background:'+p.c+'">'+p.in+'</span><span class="nm">'+p.nm+'<small>'+p.age+' · '+genderWord(p.gender)+' · '+p.layers.filter(function(k){return BYKEY[k];}).slice(0,2).map(function(k){return BYKEY[k].label;}).join(', ')+'</small></span>'+(x.status==='joined'?'<span class="st in">Joined ✓</span>':'<span class="st pending">Invited</span>')+'</div>';}).join('');
+  var b=document.getElementById('tgBtn');
+  b.disabled=!!c.booked;b.textContent=c.booked?'Your seat is booked':'Buy my seat on webook'+(o.price?' · SAR '+money(o.price):'');
+}
+function doTogether(){
+  var c=CIRCLES[tgO.id];if(!c||c.booked)return;
+  c.booked=true;renderCircle();confetti();
+  toast('Seat booked for '+tgO.t+'. The circle chat opens once two of you have booked.');
+}
+/* on the outing: the way into a gathering, or the circle if there is one */
+function circleCardHtml(o){
+  var c=CIRCLES[o.id];
+  if(!c)return '<div class="handoff" style="margin-top:12px;"><span class="wbk">None of your friends free?</span>Meet new friends: invite a few verified webook members who are also going and share your taste. Invite two or more and it’s a small gathering, not a one-to-one.<button class="btn ghost" style="margin-top:9px" onclick="openGoMatch()">Find new friends for this event</button></div>';
+  var joined=c.members.filter(function(x){return x.status==='joined';}).length;
+  return '<div class="handoff" style="margin-top:12px;"><span class="wbk">Your circle for this event</span><span class="avs" style="margin:6px 0 8px">'+c.members.map(function(x){var p=person(x.id);return '<span class="av" style="background:'+p.c+'">'+p.in+'</span>';}).join('')+'</span>'+
+    c.members.map(function(x){return person(x.id).nm;}).join(', ')+' · '+joined+' of '+c.members.length+' joined.<button class="btn ghost" style="margin-top:9px" onclick="openCircle(curOuting)">Open circle</button></div>';
+}
+
+/* ===== swipe tutorial: two seconds, the first time a member reaches the deck ===== */
+var TUT_SEEN={},tutT=null;
+function hideSwipeTut(){var t=document.getElementById('swTut');if(t)t.hidden=true;clearTimeout(tutT);}
+function showSwipeTut(){
+  var t=document.getElementById('swTut');if(!t||TUT_SEEN[USER_NAME]||!topCard())return;
+  TUT_SEEN[USER_NAME]=1;t.hidden=false;clearTimeout(tutT);tutT=setTimeout(hideSwipeTut,2200);
+}
 
 /* ===== notify screen ===== */
 function renderNotify(){var w=document.getElementById('notifyList');w.innerHTML='';NOTIFY.forEach(function(nn){var on=!!notifyState[nn.id];var el=document.createElement('div');el.className='ncard'+(on?' on':'');el.innerHTML=(nn.img?'<div class="th photo" style="background-image:url('+nn.img+')"><span class="lock"></span></div>':'<div class="th" style="background:'+nn.g+'">'+nn.emo+'<span class="lock"></span></div>')+'<div class="c"><h3>'+nn.t+'</h3><div class="sub">'+nn.sub+'</div></div><button class="nbtn'+(on?' on':'')+'" id="nb-'+nn.id+'">'+(on?'✓ Watching':'Notify me')+'</button>';w.appendChild(el);el.querySelector('#nb-'+nn.id).onclick=function(e){e.stopPropagation();toggleNotify(nn.id);};});var cnt=Object.keys(notifyState).filter(function(k){return notifyState[k];}).length;document.getElementById('notifyCount').textContent=cnt;}
 function toggleNotify(id){notifyState[id]=!notifyState[id];renderNotify();toast(notifyState[id]?"Added to watch-list — you'll get 24h early access":"Removed from watch-list");}
 
 /* ===== nav / ui ===== */
-var STEP={cover:"",interests:"Step 1 of 4",swipe:"Step 2 of 4",free:"Step 3 of 4",timeline:"Winter plans",share:"Invite friends",outing:"Your plan",book:"Checkout",payown:"Everyone pays own",tracker:"Payment tracker",match:"AI matching",gomatch:"AI matching",together:"Going together",blind:"Your table",resale:"Sold out → resale",notify:"Plan ahead"};
+var STEP={cover:"",interests:"Step 1 of 4",swipe:"Step 2 of 4",free:"Step 3 of 4",timeline:"Winter plans",share:"Invite friends",outing:"Your plan",book:"Checkout",payown:"Everyone pays own",tracker:"Payment tracker",match:"AI matching",gomatch:"New friends",together:"Your circle",blind:"Your table",resale:"Sold out → resale",notify:"Plan ahead"};
 var MAXSEL=5,MINSEL=3;
 function interestEvents(it){var pool=CATALOG.filter(function(e){return available(e)&&matchInterest(it,e);});return pool.filter(nearMe).concat(pool.filter(function(e){return !nearMe(e);}));}
 function renderHistory(){
@@ -1752,7 +1846,7 @@ function renderLoc(){
 function toggleLoc(){var o=document.getElementById('locOpts');o.hidden=!o.hidden;renderLoc();}
 function setLoc(l){USER_LOC=l;document.getElementById('locOpts').hidden=true;renderLoc();renderInterests();}
 function startFromInterests(){EVENTS=sessionDeck();decided={};yes=maybe=no=0;filter='All';renderCats();buildDeck();updateCounts();var lead=document.getElementById('swipeLead');if(lead)lead.textContent=EVENTS.length+' events for your taste'+(USER_LOC==='Anywhere'?'':' near '+USER_LOC);go('swipe');}
-function go(id){closeMenu();if(id!=='cover')clearInterval(coverT);if(id==='cover')renderCover();if(id==='timeline'&&planDirty)buildPlan();[].slice.call(document.querySelectorAll('.screen')).forEach(function(s){s.classList.toggle('active',s.dataset.s===id);});document.getElementById('step').textContent=STEP[id]||'';var b=document.querySelector('.screen.active .body');if(b)b.scrollTop=0;if(id==='notify')renderNotify();if(id==='tracker')renderTracker();if(id==='timeline')renderTimeline();if(id==='share')renderShare();}
+function go(id){closeMenu();if(id!=='cover')clearInterval(coverT);if(id==='cover')renderCover();if(id==='timeline'&&planDirty)buildPlan();[].slice.call(document.querySelectorAll('.screen')).forEach(function(s){s.classList.toggle('active',s.dataset.s===id);});document.getElementById('step').textContent=STEP[id]||'';var b=document.querySelector('.screen.active .body');if(b)b.scrollTop=0;if(id==='notify')renderNotify();if(id==='tracker')renderTracker();if(id==='timeline')renderTimeline();if(id==='share')renderShare();if(id==='swipe')showSwipeTut();else hideSwipeTut();}
 function openMenu(){var o=otherMember();document.getElementById('menuSwitch').innerHTML='<span>View as '+o+'</span><span class="n">'+(o==='Sultan'?'invited friend':'back to Omar')+'</span>';document.getElementById('sheet').classList.add('show');}
 function closeMenu(){document.getElementById('sheet').classList.remove('show');}
 var tT;
@@ -1769,6 +1863,8 @@ buildPlan();
 /* the two demo members */
 PROFILES.Omar=freshProfile('Omar',HISTORY,['Farrukh','Yousef'],null);saveMe();
 PROFILES.Sultan=freshProfile('Sultan',[],['Yousef'],'Omar');
+/* age and gender come from the member's webook account */
+PROFILES.Omar.age=29;PROFILES.Omar.gender='Male';PROFILES.Sultan.age=27;PROFILES.Sultan.gender='Male';
 renderTimeline();
 renderNotify();
 renderCover();
