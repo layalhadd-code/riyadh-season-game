@@ -440,6 +440,17 @@ span.chip{cursor:default}
 @keyframes tutL{0%,100%{transform:rotate(180deg) translateX(0)}50%{transform:rotate(180deg) translateX(9px)}}
 @keyframes tutD{0%,100%{transform:rotate(90deg) translateX(0)}50%{transform:rotate(90deg) translateX(9px)}}
 @media (prefers-reduced-motion:reduce){.tut,.tut .i{animation:none}.tut .tl .i{transform:rotate(180deg)}.tut .td .i{transform:rotate(90deg)}}
+/* ---------- the robot on the calendar screen ---------- */
+.screen[data-s="free"] .body{display:flex;flex-direction:column}
+.calbot{margin-top:auto;padding-top:24px;display:flex;align-items:center;gap:8px}
+.calbot .bubble{flex:1;min-width:0;position:relative;background:var(--surface);border:1px solid var(--line2);border-radius:16px;padding:12px 14px;font-size:14px;line-height:1.4;color:var(--text)}
+.calbot .bubble b{color:var(--ink)}
+.calbot .bubble::after{content:"";position:absolute;right:-7px;top:50%;width:12px;height:12px;margin-top:-6px;background:var(--surface);border-top:1px solid var(--line2);border-right:1px solid var(--line2);transform:rotate(45deg)}
+.calbot img{flex:0 0 auto;height:168px;width:auto;animation:botBob 3.2s ease-in-out infinite}
+.calbot.pop img{animation:botPop .45s cubic-bezier(.2,1.4,.4,1) both,botBob 3.2s ease-in-out .45s infinite}
+@keyframes botBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+@keyframes botPop{from{transform:scale(.86)}to{transform:scale(1)}}
+@media (prefers-reduced-motion:reduce){.calbot img,.calbot.pop img{animation:none}}
 .confetti{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:30}
 .confetti i{position:absolute;top:-10px;width:9px;height:14px;opacity:.9;animation:fall 1.8s linear forwards}
 @keyframes fall{to{transform:translateY(120vh) rotate(540deg);opacity:0}}
@@ -553,6 +564,10 @@ span.chip{cursor:default}
           <button class="btcard" onclick="toggleBtime(this,'afternoon')"><span class="bt-t">Afternoon</span><span class="bt-s">12 – 4 PM</span></button>
           <button class="btcard" onclick="toggleBtime(this,'evening')"><span class="bt-t">Evening</span><span class="bt-s">5 – 8 PM</span></button>
           <button class="btcard" onclick="toggleBtime(this,'night')"><span class="bt-t">Late night</span><span class="bt-s">9 PM – 1 AM</span></button>
+        </div>
+        <div class="calbot" id="calBot">
+          <div class="bubble" id="calSay" aria-live="polite">When are you usually free? Tap your days and your best times.</div>
+          <img id="calImg" src="bot-wait.webp" alt="" draggable="false">
         </div>
       </div>
       <div class="actionbar"><button class="btn primary" onclick="buildPlan();hubOpen='me';go('timeline')">Build my winter plan</button></div>
@@ -1187,8 +1202,24 @@ function renderMtabs(){var w=document.getElementById('mtabs');w.innerHTML='';MON
 function renderCal(){var cal=document.getElementById('cal');cal.innerHTML='';["Su","Mo","Tu","We","Th","Fr","Sa"].forEach(function(d){var e=document.createElement('div');e.className='dow';e.textContent=d;cal.appendChild(e);});var days=curMonth==="Dec"?31:(curMonth==="Nov"?30:31);var start=curMonth==="Dec"?DEC_START:(curMonth==="Nov"?6:(curMonth==="Jan"?4:0));for(var i=0;i<start;i++){var e=document.createElement('div');e.className='day empty';cal.appendChild(e);}for(var d=1;d<=days;d++){var cell=document.createElement('div');cell.className='day';cell.textContent=d;cell.onclick=(function(c){return function(){c.classList.toggle('free');};})(cell);cal.appendChild(cell);}}
 function setBudget(btn,val){[].slice.call(document.querySelectorAll('#budget .pill')).forEach(function(p){p.classList.remove('on');});btn.classList.add('on');USER.budget=val;}
 var freeDays=[],bestTimes=[];
-function toggleDay(el,d){el.classList.toggle('on');var on=el.classList.contains('on');var i=freeDays.indexOf(d);if(on&&i<0)freeDays.push(d);else if(!on&&i>=0)freeDays.splice(i,1);USER.freeDays=freeDays;}
-function toggleBtime(el,t){el.classList.toggle('on');var on=el.classList.contains('on');var i=bestTimes.indexOf(t);if(on&&i<0)bestTimes.push(t);else if(!on&&i>=0)bestTimes.splice(i,1);USER.bestTimes=bestTimes;}
+function toggleDay(el,d){el.classList.toggle('on');var on=el.classList.contains('on');var i=freeDays.indexOf(d);if(on&&i<0)freeDays.push(d);else if(!on&&i>=0)freeDays.splice(i,1);USER.freeDays=freeDays;renderCalBot();}
+function toggleBtime(el,t){el.classList.toggle('on');var on=el.classList.contains('on');var i=bestTimes.indexOf(t);if(on&&i<0)bestTimes.push(t);else if(!on&&i>=0)bestTimes.splice(i,1);USER.bestTimes=bestTimes;renderCalBot();}
+/* the webook robot on the calendar screen says back what it heard */
+function joinAnd(a){return a.length<2?a.join(''):a.slice(0,-1).join(', ')+' and '+a[a.length-1];}
+function renderCalBot(){
+  var w=document.getElementById('calBot');if(!w)return;
+  var ds=WD.filter(function(d){return freeDays.indexOf(d)>=0;});
+  var days=ds.length===7?['Any day']:ds.map(function(d){return ds.length>3?d:WDL[WD.indexOf(d)]+'s';});
+  var times=["morning","afternoon","evening","night"].filter(function(k){return bestTimes.indexOf(k)>=0;}).map(function(k){return SLOT_NAME[k];});
+  var ready=days.length&&times.length,msg,t=joinAnd(times);
+  if(ready)msg='<b>'+joinAnd(days)+'</b>, <b>'+t+'</b>. I’ll build your winter around that.';
+  else if(days.length)msg='<b>'+joinAnd(days)+'</b>, got it. Now pick your best times.';
+  else if(times.length)msg='<b>'+t.charAt(0).toUpperCase()+t.slice(1)+'</b>, got it. Which days suit you?';
+  else msg='When are you usually free? Tap your days and your best times.';
+  document.getElementById('calSay').innerHTML=msg;
+  var img=document.getElementById('calImg'),src=ready?'bot-done.webp':'bot-wait.webp';
+  if(img.getAttribute('src')!==src){img.setAttribute('src',src);w.classList.remove('pop');void w.offsetWidth;w.classList.add('pop');}
+}
 var WHO=["Concerts & music","Sports & matches","Theater & shows","Dining & outdoors"];
 function renderWho(){var w=document.getElementById('whoWrap');w.innerHTML='';var opts=["Solo","Partner","Kids","Friends"];WHO.forEach(function(name,idx){var box=document.createElement('div');box.className='who';var h='<div class="n">'+name+'</div><div class="pills">';opts.forEach(function(o,j){h+='<button class="pill">'+o+'</button>';});box.innerHTML=h+'</div>';w.appendChild(box);[].slice.call(box.querySelectorAll('.pill')).forEach(function(p){p.onclick=function(){[].slice.call(box.querySelectorAll('.pill')).forEach(function(x){x.classList.remove('on');});p.classList.add('on');};});});}
 
@@ -1846,7 +1877,7 @@ function renderLoc(){
 function toggleLoc(){var o=document.getElementById('locOpts');o.hidden=!o.hidden;renderLoc();}
 function setLoc(l){USER_LOC=l;document.getElementById('locOpts').hidden=true;renderLoc();renderInterests();}
 function startFromInterests(){EVENTS=sessionDeck();decided={};yes=maybe=no=0;filter='All';renderCats();buildDeck();updateCounts();var lead=document.getElementById('swipeLead');if(lead)lead.textContent=EVENTS.length+' events for your taste'+(USER_LOC==='Anywhere'?'':' near '+USER_LOC);go('swipe');}
-function go(id){closeMenu();if(id!=='cover')clearInterval(coverT);if(id==='cover')renderCover();if(id==='timeline'&&planDirty)buildPlan();[].slice.call(document.querySelectorAll('.screen')).forEach(function(s){s.classList.toggle('active',s.dataset.s===id);});document.getElementById('step').textContent=STEP[id]||'';var b=document.querySelector('.screen.active .body');if(b)b.scrollTop=0;if(id==='notify')renderNotify();if(id==='tracker')renderTracker();if(id==='timeline')renderTimeline();if(id==='share')renderShare();if(id==='swipe')showSwipeTut();else hideSwipeTut();}
+function go(id){closeMenu();if(id!=='cover')clearInterval(coverT);if(id==='cover')renderCover();if(id==='timeline'&&planDirty)buildPlan();[].slice.call(document.querySelectorAll('.screen')).forEach(function(s){s.classList.toggle('active',s.dataset.s===id);});document.getElementById('step').textContent=STEP[id]||'';var b=document.querySelector('.screen.active .body');if(b)b.scrollTop=0;if(id==='notify')renderNotify();if(id==='tracker')renderTracker();if(id==='timeline')renderTimeline();if(id==='share')renderShare();if(id==='swipe')showSwipeTut();else hideSwipeTut();if(id==='free')renderCalBot();}
 function openMenu(){var o=otherMember();document.getElementById('menuSwitch').innerHTML='<span>View as '+o+'</span><span class="n">'+(o==='Sultan'?'invited friend':'back to Omar')+'</span>';document.getElementById('sheet').classList.add('show');}
 function closeMenu(){document.getElementById('sheet').classList.remove('show');}
 var tT;
